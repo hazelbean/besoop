@@ -1,0 +1,761 @@
+package mapo.com.web;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+import org.springmodules.validation.commons.DefaultBeanValidator;
+
+import egovframework.com.cmm.ComDefaultCodeVO;
+import egovframework.com.cmm.service.EgovCmmUseService;
+import egovframework.com.cmm.util.EgovUserDetailsHelper;
+import egovframework.com.uss.umt.service.EgovUserManageService;
+import egovframework.com.uss.umt.service.UserDefaultVO;
+import egovframework.com.uss.umt.service.UserManageVO;
+import egovframework.com.utl.sim.service.EgovFileScrty;
+import egovframework.rte.fdl.property.EgovPropertyService;
+import egovframework.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
+import mapo.work.service.WorkService;
+import mapo.work.service.WorkVO;
+
+@Controller
+public class MapoUserManageController {
+
+	/** userManageService */
+	@Resource(name = "userManageService")
+	private EgovUserManageService userManageService;
+
+	/** cmmUseService */
+	@Resource(name = "EgovCmmUseService")
+	private EgovCmmUseService cmmUseService;
+
+	/** EgovPropertyService */
+	@Resource(name = "propertiesService")
+	protected EgovPropertyService propertiesService;
+
+	/** DefaultBeanValidator beanValidator */
+	@Autowired
+	private DefaultBeanValidator beanValidator;
+
+	// Service
+	@Resource(name = "workService")
+	private WorkService workService;
+
+	
+	
+	/**
+	 * 소속기관, 조직, 권한 선택
+	 * 
+	 * @param vo
+	 * @param model
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/mapo/selectJoinInfo.do", method = RequestMethod.POST)
+	@ResponseBody
+	public ModelAndView selectOrg1(@ModelAttribute("WorkVO") WorkVO workVO, @ModelAttribute("userSearchVO") UserDefaultVO userSearchVO, ModelMap model, 
+			@RequestParam("mode") String mode) throws Exception {
+
+		System.out.println("mode -----> " + mode);
+		System.out.println("code -----> " + workVO.getCode());
+
+		String code = workVO.getCode();
+
+		/* Ajax List 리턴을 위해서는 ModelAndView 로 설정해야 함 */
+		ModelAndView modelAndView = new ModelAndView();
+
+		List<?> list = new ArrayList<>();
+
+		ComDefaultCodeVO vo = new ComDefaultCodeVO();
+
+		/* 소속그룹 선택 */
+		if ("groupId".equals(mode)) {
+
+			// 마포구청 선택 
+			if ("GROUP_00000000000000".equals(code)) {
+
+				// 마포구청 과 검색
+				workVO.setClCode("ZCD");
+				workVO.setCodeId("DEPT10");
+		
+				list = workService.selectMiddleCode(workVO);
+
+			// 산하기관 선택
+			} else if ("GROUP_00000000000001".equals(code)) {
+				System.out.println("code ----------->" + workVO.getCode());
+				
+				workVO.setCode(null);
+				
+				// 공통코드 소분류 조회
+				list = workService.selectDepth3(workVO);
+			}
+		
+		/*  소속과(분류) 선택 */	
+		} else if ("pstinstMidCode".equals(mode)) {
+			
+			System.out.println("code2 ----------->" + workVO.getCode());
+
+			String seletCode =  workVO.getCode();			
+			String tempCode = seletCode.substring(0, 4);
+			
+			System.out.println("code3 ----------->" + tempCode);
+			
+			// 마포구청 선택 
+			if ("DEPT".equals(tempCode)) {
+
+				// 팀을 코드정보로부터 조회
+				vo.setCodeId(seletCode);
+				list = cmmUseService.selectCmmCodeDetail(vo);
+
+				// 산하기관 선택
+			} else  {
+				
+				workVO.setOrgSc(seletCode);
+				
+				list = workService.selectGthOrgList(workVO);
+			}
+		
+			
+		 /*  소속팀(기관) 선택 */	
+		} else if ("insttCode".equals(mode)) {
+			
+			// 마포구청 권한 
+			if ("GROUP_00000000000000".equals(code)) {
+
+				vo.setCodeId("AUTH10");
+				list = cmmUseService.selectCmmCodeDetail(vo);
+
+			// 산하기관 권한
+			} else if ("GROUP_00000000000001".equals(code)) {
+				
+				// 사용권한 조회
+				vo.setCodeId("AUTH20");
+				list = cmmUseService.selectCmmCodeDetail(vo);
+
+			}
+		}
+		
+
+		System.out.println("list.size : " + list.size());
+
+		modelAndView.setViewName("jsonView");
+		modelAndView.addObject("result", list);
+
+		return modelAndView;
+	}
+	
+
+	/**
+	 * 사용자목록을 조회한다. (pageing)
+	 * 
+	 * @param userSearchVO 검색조건정보
+	 * @param model        화면모델
+	 * @return mapo/com/MapoUserManage
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/mapo/MapoUserManage.do")
+	public String selectUserList(@ModelAttribute("userSearchVO") UserDefaultVO userSearchVO, ModelMap model) throws Exception {
+
+		// 미인증 사용자에 대한 보안처리
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+		if (!isAuthenticated) {
+			//return "index";
+			return "mapo/MapoMain";
+		}
+
+		/** EgovPropertyService */
+		userSearchVO.setPageUnit(propertiesService.getInt("pageUnit"));
+		userSearchVO.setPageSize(propertiesService.getInt("pageSize"));
+
+		/** pageing */
+		PaginationInfo paginationInfo = new PaginationInfo();
+		paginationInfo.setCurrentPageNo(userSearchVO.getPageIndex());
+		paginationInfo.setRecordCountPerPage(userSearchVO.getPageUnit());
+		paginationInfo.setPageSize(userSearchVO.getPageSize());
+
+		userSearchVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
+		userSearchVO.setLastIndex(paginationInfo.getLastRecordIndex());
+		userSearchVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+
+		List<?> userList = userManageService.selectUserList(userSearchVO);
+		model.addAttribute("resultList", userList);
+
+		int totCnt = userManageService.selectUserListTotCnt(userSearchVO);
+		paginationInfo.setTotalRecordCount(totCnt);
+		model.addAttribute("paginationInfo", paginationInfo);
+
+		//사용자상태코드를 코드정보로부터 조회
+		ComDefaultCodeVO vo = new ComDefaultCodeVO();
+		vo.setCodeId("COM013");
+		List<?> emplyrSttusCode_result = cmmUseService.selectCmmCodeDetail(vo);
+		model.addAttribute("emplyrSttusCode_result", emplyrSttusCode_result);//사용자상태코드목록
+
+		return "mapo/com/MapoUserManage";
+	}
+
+	
+	
+	/**
+	 * 사용자등록화면으로 이동한다.
+	 * 
+	 * @param userSearchVO 검색조건정보
+	 * @param userManageVO 사용자초기화정보
+	 * @param model        화면모델
+	 * @return cmm/uss/umt/MapoUserInsert
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/mapo/MapoUserInsertView.do")
+	public String insertUserView(@ModelAttribute("userSearchVO") UserDefaultVO userSearchVO, @ModelAttribute("userManageVO") UserManageVO userManageVO, 
+			 @ModelAttribute("WorkVO") WorkVO workVO, Model model) throws Exception {
+		
+		// 미인증 사용자에 대한 보안처리
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+		if (!isAuthenticated) {
+			//return "index";
+			return "mapo/MapoMain";
+		}
+
+		ComDefaultCodeVO vo = new ComDefaultCodeVO();
+
+		//패스워드힌트목록을 코드정보로부터 조회
+		vo.setCodeId("COM022");
+		List<?> passwordHint_result = cmmUseService.selectCmmCodeDetail(vo);
+
+		//성별구분코드를 코드정보로부터 조회
+		vo.setCodeId("COM014");
+		List<?> sexdstnCode_result = cmmUseService.selectCmmCodeDetail(vo);
+
+		//사용자 가입 상태코드를 코드정보로부터 조회
+		vo.setCodeId("COM013");
+		List<?> emplyrSttusCode_result = cmmUseService.selectCmmCodeDetail(vo);
+
+		//그룹정보(마포구청/ 산하기관) 조회 - GROUP_ID정보
+		vo.setTableNm("COMTNORGNZTINFO");
+		List<?> groupId_result = cmmUseService.selectGroupIdDetail(vo);		
+
+		
+		/*	 소속 선택 -> 조직 조회 */
+		String grouId = userManageVO.getGroupId();
+		
+		System.out.println("grouId   -----> " + grouId);
+		
+		List<?> list = new ArrayList<>();
+						
+				
+		// 마포구청 선택 
+		if("GROUP_00000000000000".equals(grouId)) {
+			
+			// 팀을 코드정보로부터 조회
+			vo.setCodeId("DEPT10");
+			list = cmmUseService.selectCmmCodeDetail(vo);
+		
+		// 산하기관 선택
+		} else if ("GROUP_00000000000001".equals(grouId)) {
+			list = workService.selectGthOrgList(workVO);
+		}
+		
+		model.addAttribute("passwordHint_result", passwordHint_result); //패스워트힌트목록
+		model.addAttribute("sexdstnCode_result", sexdstnCode_result); //성별구분코드목록
+		model.addAttribute("emplyrSttusCode_result", emplyrSttusCode_result);//사용자상태코드목록
+		//model.addAttribute("insttCode_result", insttCode_result); //소속기관코드목록
+		model.addAttribute("insttCode_result", list); //소속기관코드목록
+		//model.addAttribute("orgnztId_result", orgnztId_result); //조직정보 목록
+		model.addAttribute("groupId_result", groupId_result); //그룹정보 목록
+
+		return "mapo/com/MapoUserInsert";
+	}
+
+	
+	
+	/**
+	 * 사용자등록처리후 목록화면으로 이동한다 (등록 실패 시 처리)
+	 * 
+	 * @param userManageVO  사용자등록정보
+	 * @param bindingResult 입력값검증용 bindingResult
+	 * @param model         화면모델
+	 * @return forward:/mapo/com/MapoUserManage.do
+	 * @throws Exception
+	 */
+	@RequestMapping("mapo/MapoUserInsert.do")
+	public String insertUser(@ModelAttribute("userManageVO") UserManageVO userManageVO, 
+			BindingResult bindingResult, Model model) throws Exception {
+
+		// 미인증 사용자에 대한 보안처리
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+
+		if (!isAuthenticated) {
+			return "mapo/MapoMain";
+		}
+		
+		System.out.println("DEBUG : MapoUserInsert -----------------------> ");
+		
+
+		beanValidator.validate(userManageVO, bindingResult);
+		
+		System.out.println("DEBUG : bindingResult -----------------------> " + bindingResult.hasErrors());
+
+		
+		/* 필수체크 후 다시 값 세팅 */
+		if (bindingResult.hasErrors()) {
+			
+			ComDefaultCodeVO vo = new ComDefaultCodeVO();
+			WorkVO workVO = new WorkVO();
+			
+
+			/*	소속그룹  설정 */
+			vo.setTableNm("COMTNORGNZTINFO");
+			List<?> groupId_result = cmmUseService.selectGroupIdDetail(vo);
+				
+			
+			/*	소속팀(분류) 설정 */
+			String groupId = userManageVO.getGroupId();
+			
+			List<?> list1 = new ArrayList<>();
+			List<?> list2 = new ArrayList<>();
+			
+			System.out.println("DEBUG CODE : groupId -------------------> " + groupId);
+			
+			// 마포구청 선택 
+			if("GROUP_00000000000000".equals(groupId)) {
+						
+				workVO.setClCode("ZCD");
+				workVO.setCodeId("DEPT10");
+		
+				list1 = workService.selectMiddleCode(workVO);
+				
+				System.out.println("DEBUG CODE 1 : list1 -------------------> " + list1.size());
+			
+			// 산하기관 선택	
+			} else if ("GROUP_00000000000001".equals(groupId)) {
+					
+				workVO.setCode(null);
+				
+				// 공통코드 소분류 조회
+				list1 = workService.selectDepth3(workVO);
+				
+				System.out.println("DEBUG CODE 2 : list1 -------------------> " + list1.size());
+			}
+			
+	
+							
+			/*	소속팀(기관)  */		
+			  // 마포구청 선택 
+			  if("GROUP_00000000000000".equals(groupId)) {
+			  
+				  // 팀을 코드정보로부터 조회 
+				  vo.setCodeId("DEPT10"); 
+				  list2 = cmmUseService.selectCmmCodeDetail(vo);
+		 
+			  // 산하기관 선택 
+			  } else if ("GROUP_00000000000001".equals(groupId)) { 
+				  
+				  list2 = workService.selectGthOrgList(workVO); 
+			  }
+			 
+			 
+			
+
+			  /* 사용권한  */
+			  List<?> authorCode_result = new ArrayList<>();
+		  
+			  if("GROUP_00000000000000".equals(groupId)) {
+				  vo.setCodeId("AUTH10");
+				  authorCode_result = cmmUseService.selectCmmCodeDetail(vo);
+			  
+			  } else if ("GROUP_00000000000001".equals(groupId)) {
+			  
+				  vo.setCodeId("AUTH20");
+				  authorCode_result = cmmUseService.selectCmmCodeDetail(vo);		
+			  }
+			
+				
+			/* 가입 상태코드 */
+			vo.setCodeId("COM013");
+			List<?> emplyrSttusCode_result = cmmUseService.selectCmmCodeDetail(vo);
+				
+			
+			model.addAttribute("groupId_result", groupId_result); 		// 소속그룹	
+			model.addAttribute("pstinstMidCode_result", list1); 				// 소속과(분류)
+			model.addAttribute("insttCode_result", list2); 				// 소속팀(기관)
+			model.addAttribute("authorCode_result", authorCode_result); // 사용권한
+			model.addAttribute("emplyrSttusCode_result", emplyrSttusCode_result); // 가입 상태코드
+
+
+			return "mapo/com/MapoUserInsert";
+
+		} else {
+
+			System.out.println("등록 시작 =================> ");
+
+			// 조직코드 기본으로 입력
+			userManageVO.setOrgnztId("ORGNZT_0000000000000");
+
+			if ("".equals(userManageVO.getOrgnztId())) {//KISA 보안약점 조치 (2018-10-29, 윤창원)
+				userManageVO.setOrgnztId(null);
+			}
+			if ("".equals(userManageVO.getGroupId())) {//KISA 보안약점 조치 (2018-10-29, 윤창원)
+				userManageVO.setGroupId(null);
+			}
+
+
+			System.out.println("조직ID =================> " + userManageVO.getOrgnztId());
+			System.out.println("그룹ID =================> " + userManageVO.getGroupId());
+
+
+			userManageService.insertUser(userManageVO);
+			
+			//Exception 없이 진행시 등록성공메시지
+			model.addAttribute("resultMsg", "success.common.insert");
+		}
+
+		System.out.println("등록 성공 =================> ");
+
+		return "redirect:/mapo/MapoUserManage.do";
+	}
+	/*			if ("".equals(userManageVO.getPstinstMidCode())) {//KISA 보안약점 조치 (2018-10-29, 윤창원)
+				userManageVO.setPstinstMidCode(null);
+			}
+			if ("".equals(userManageVO.getInsttCode())) {//KISA 보안약점 조치 (2018-10-29, 윤창원)
+				userManageVO.setInsttCode(null);
+			}
+	 * 			System.out.println("소속과ID =================> " + userManageVO.getPstinstMidCode());
+			System.out.println("소속팀ID =================> " + userManageVO.getInsttCode());
+	 * */
+	
+	/**
+	 * 사용자정보 수정을 위해 사용자정보를 상세조회한다.
+	 * 
+	 * @param uniqId       상세조회대상 사용자아이디
+	 * @param userSearchVO 검색조건
+	 * @param model        화면모델
+	 * @return uss/umt/EgovUserSelectUpdt
+	 * @throws Exception
+	 */
+	@RequestMapping("/mapo/MapoUserSelectUpdtView.do")
+
+	public String updateUserView(
+			@RequestParam("selectedId") String uniqId,
+			@ModelAttribute("WorkVO") WorkVO workVO,
+			@ModelAttribute("searchVO") UserDefaultVO userSearchVO, Model model) throws Exception {
+
+		System.out.println("MapoUserSelectUpdtView  --------------------------------->");
+
+		// 미인증 사용자에 대한 보안처리
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+		if (!isAuthenticated) {
+			return "mapo/MapoMain";
+		}
+
+		ComDefaultCodeVO vo = new ComDefaultCodeVO();
+		
+		//패스워드힌트목록을 코드정보로부터 조회
+		vo.setCodeId("COM022");
+		List<?> passwordHint_result = cmmUseService.selectCmmCodeDetail(vo);
+		//성별구분코드를 코드정보로부터 조회
+		vo.setCodeId("COM014");
+		List<?> sexdstnCode_result = cmmUseService.selectCmmCodeDetail(vo);
+		//사용자상태코드를 코드정보로부터 조회
+		vo.setCodeId("COM013");
+		List<?> emplyrSttusCode_result = cmmUseService.selectCmmCodeDetail(vo);
+		//조직정보를 조회 - ORGNZT_ID 정보
+		vo.setTableNm("COMTNORGNZTINFO");
+		List<?> orgnztId_result = cmmUseService.selectOgrnztIdDetail(vo);
+		//그룹정보를 조회 - GROUP_ID 정보
+		vo.setTableNm("COMTNORGNZTINFO");
+		List<?> groupId_result = cmmUseService.selectGroupIdDetail(vo);
+
+		System.out.println("userManageVO.uniqId   -----> " + uniqId);
+
+		model.addAttribute("passwordHint_result", passwordHint_result); //패스워트힌트목록
+		model.addAttribute("sexdstnCode_result", sexdstnCode_result); //성별구분코드목록
+		model.addAttribute("emplyrSttusCode_result", emplyrSttusCode_result);//사용자상태코드목록
+		model.addAttribute("orgnztId_result", orgnztId_result); //조직정보 목록
+		model.addAttribute("groupId_result", groupId_result); //소속1: 그룹정보 목록
+		
+		UserManageVO userManageVO = new UserManageVO();
+		userManageVO = userManageService.selectUser(uniqId);
+		model.addAttribute("userSearchVO", userSearchVO);
+		model.addAttribute("userManageVO", userManageVO);
+        
+        /* 소속2: 소속과(분류) */
+		String groupId = userManageVO.getGroupId();
+		
+		System.out.println("++++++++++ 그룹Id ++++++++++ " + groupId);
+		
+        List<?> pstinstMidCode_result = new ArrayList<>();
+        // 마포구청 선택 
+     		if("GROUP_00000000000000".equals(groupId)) {
+     			
+     			// 팀을 코드정보로부터 조회    			
+     			workVO.setClCode("ZCD");
+     			workVO.setCodeId("DEPT10");
+     			pstinstMidCode_result = workService.selectMiddleCode(workVO);
+     		
+     		// 산하기관 선택
+     		} else if ("GROUP_00000000000001".equals(groupId)) {
+     			pstinstMidCode_result = workService.selectDepth3(workVO);
+     		}
+
+		model.addAttribute("pstinstMidCode_result", pstinstMidCode_result); //소속2: 소속과(분류) 목록
+    	
+        /* 소속3: 소속팀(기관) */
+
+        List<?> insttCode_result = new ArrayList<>();
+        
+        
+        // 마포구청 선택 
+     		if("GROUP_00000000000000".equals(groupId)) {
+     			
+     			// 팀을 코드정보로부터 조회
+     			vo.setCodeId("DEPT10");
+     			insttCode_result = cmmUseService.selectCmmCodeDetail(vo);
+     		
+     		// 산하기관 선택
+     		} else if ("GROUP_00000000000001".equals(groupId)) {
+     			workVO.setOrgSc(userManageVO.getPstinstMidCode());
+     			insttCode_result = workService.selectGthOrgList(workVO);
+
+     		}
+
+		model.addAttribute("insttCode_result", insttCode_result); //소속3: 소속팀(기관) 목록
+		
+		
+		 /* 사용권한  */
+		  List<?> authorCode_result = new ArrayList<>();
+	  
+		  if("GROUP_00000000000000".equals(groupId)) {
+			  vo.setCodeId("AUTH10");
+			  authorCode_result = cmmUseService.selectCmmCodeDetail(vo);
+		  
+		  } else if ("GROUP_00000000000001".equals(groupId)) {
+		  
+			  vo.setCodeId("AUTH20");
+			  authorCode_result = cmmUseService.selectCmmCodeDetail(vo);		
+		  }
+		  
+		  model.addAttribute("authorCode_result", authorCode_result); //사용권한 목록
+				
+		return "mapo/com/MapoUserSelectUpdt";
+	}
+		  
+	/**
+	 * 로그인인증제한 해제
+	 * 
+	 * @param userManageVO 사용자정보
+	 * @param model        화면모델
+	 * @return uss/umt/EgovUserSelectUpdtView.do
+	 * @throws Exception
+	 */
+	@RequestMapping("/mapo/MapoUserLockIncorrect.do")
+	public String updateLockIncorrect(UserManageVO userManageVO, Model model) throws Exception {
+
+		// 미인증 사용자에 대한 보안처리
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+		if (!isAuthenticated) {
+			return "mapo/MapoMain";
+		}
+
+		userManageService.updateLockIncorrect(userManageVO);
+
+		return "forward:/mapo/MapoUserSelectUpdtView.do";
+	}
+
+	/**
+	 * 사용자정보 수정후 목록조회 화면으로 이동한다.
+	 * 
+	 * @param userManageVO  사용자수정정보
+	 * @param bindingResult 입력값검증용 bindingResult
+	 * @param model         화면모델
+	 * @return forward:/mapo/MapoUserManage.do
+	 * @throws Exception
+	 */
+	@RequestMapping("/mapo/MapoUserSelectUpdt.do")
+	public String updateUser(@ModelAttribute("userManageVO") UserManageVO userManageVO, BindingResult bindingResult, Model model) throws Exception {
+
+		// 미인증 사용자에 대한 보안처리
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+		if (!isAuthenticated) {
+			return "mapo/MapoMain";
+		}
+
+		//beanValidator.validate(userManageVO, bindingResult);
+		if (bindingResult.hasErrors()) {
+			model.addAttribute("resultMsg", bindingResult.getAllErrors().get(0).getDefaultMessage());
+			return "forward:/mapo/MapoUserManage.do";
+		} else {
+			//업무사용자 수정시 히스토리 정보를 등록한다.
+			userManageService.insertUserHistory(userManageVO);
+			if ("".equals(userManageVO.getOrgnztId())) {//KISA 보안약점 조치 (2018-10-29, 윤창원)
+				userManageVO.setOrgnztId(null);
+			}
+			if ("".equals(userManageVO.getGroupId())) {//KISA 보안약점 조치 (2018-10-29, 윤창원)
+				userManageVO.setGroupId(null);
+			}
+			userManageService.updateUser(userManageVO);
+			//Exception 없이 진행시 수정성공메시지
+			model.addAttribute("resultMsg", "success.common.update");
+			return "redirect:/mapo/MapoUserManage.do";
+		}
+	}
+
+	/**
+	 * 사용자정보삭제후 목록조회 화면으로 이동한다.
+	 * 
+	 * @param checkedIdForDel 삭제대상아이디 정보
+	 * @param userSearchVO    검색조건
+	 * @param model           화면모델
+	 * @return forward:/uss/umt/EgovUserManage.do
+	 * @throws Exception
+	 */
+	@RequestMapping("/mapo/MapoUserDelete.do")
+	public String deleteUser(@RequestParam("checkedIdForDel") String checkedIdForDel, @ModelAttribute("searchVO") UserDefaultVO userSearchVO, Model model) throws Exception {
+
+		// 미인증 사용자에 대한 보안처리
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+		if (!isAuthenticated) {
+			return "mapo/MapoMain";
+		}
+
+		userManageService.deleteUser(checkedIdForDel);
+		//Exception 없이 진행시 등록성공메시지
+		model.addAttribute("resultMsg", "success.common.delete");
+		return "forward:/mapo/MapoUserManage.do";
+	}
+
+	/**
+	 * 업무사용자 암호 수정처리 후 화면 이동
+	 * 
+	 * @param model        화면모델
+	 * @param commandMap   파라메터전달용 commandMap
+	 * @param userSearchVO 검색조 건
+	 * @param userManageVO 사용자수정정보(비밀번호)
+	 * @return uss/umt/EgovUserPasswordUpdt
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/mapo/MapoUserPasswordUpdt.do")
+	public String updatePassword(ModelMap model, @RequestParam Map<String, Object> commandMap,
+			@ModelAttribute("searchVO") UserDefaultVO userSearchVO, @ModelAttribute("userManageVO") UserManageVO userManageVO) throws Exception {
+
+		// 미인증 사용자에 대한 보안처리
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+		if (!isAuthenticated) {
+			return "mapo/MapoMain";
+		}
+		
+		String oldPassword = (String) commandMap.get("oldPassword");
+		System.out.println("올드패스 " +oldPassword);
+		String newPassword = (String) commandMap.get("newPassword");
+		System.out.println("뉴패스1 " +newPassword);
+		String newPassword2 = (String) commandMap.get("newPassword2");
+		System.out.println("뉴패스2 " +newPassword2);
+		String uniqId = (String) commandMap.get("uniqId");
+		System.out.println("현재 내가 사용하고 있는 uniqId : " + uniqId);
+
+		boolean isCorrectPassword = false;
+		UserManageVO resultVO = new UserManageVO();
+		userManageVO.setPassword(newPassword);
+		userManageVO.setOldPassword(oldPassword);
+		userManageVO.setUniqId(uniqId);
+
+		String resultMsg = "";
+		resultVO = userManageService.selectPassword(userManageVO);
+		//패스워드 암호화
+		String encryptPass = EgovFileScrty.encryptPassword(oldPassword, userManageVO.getEmplyrId());
+		System.out.println("현재 내가 사용하고 있는 id : " + userManageVO.getEmplyrId());
+		if (encryptPass.equals(resultVO.getPassword())) {
+			if (newPassword.equals(newPassword2)) {
+				isCorrectPassword = true;
+			} else {
+				isCorrectPassword = false;
+				resultMsg = "fail.user.passwordUpdate2";
+			}
+		} else {
+			isCorrectPassword = false;
+			resultMsg = "fail.user.passwordUpdate1";
+		}
+
+		if (isCorrectPassword) {
+			userManageVO.setPassword(EgovFileScrty.encryptPassword(newPassword, userManageVO.getEmplyrId()));
+			userManageService.updatePassword(userManageVO);
+			model.addAttribute("userManageVO", userManageVO);
+			resultMsg = "success.common.update";
+		} else {
+			model.addAttribute("userManageVO", userManageVO);
+		}
+		model.addAttribute("userSearchVO", userSearchVO);
+		model.addAttribute("resultMsg", resultMsg);
+
+		return "mapo/com/MapoUserPasswordUpdt";
+	}
+	
+	/**
+	 * 업무사용자 암호 수정처리에서 초기화
+	 */
+	@RequestMapping(value = "/mapo/MapoUserPasswordUpdtReset.do")
+	public String MapoUserPasswordUpdtReset(ModelMap model, 
+			@RequestParam("emplyrId") String emplyrId,
+			@RequestParam("uniqId") String uniqId,
+			@ModelAttribute("searchVO") UserDefaultVO userSearchVO, 
+			@ModelAttribute("userManageVO") UserManageVO userManageVO) throws Exception {
+		
+		String resetPasssword = "mapo@mapo2021"; //초기화할 비밀번호
+		String resultResetMsg = "";
+		System.out.println("현재 내가 사용하고 있는 id : " + emplyrId);
+		System.out.println("현재 내가 사용하고 있는 uniqId : " + uniqId);
+		userManageVO.setEmplyrId(emplyrId);
+		userManageVO.setUniqId(uniqId);
+		//패스워드 암호화
+		String encryptPass = EgovFileScrty.encryptPassword(resetPasssword, userManageVO.getEmplyrId());
+		
+		userManageVO.setPassword(EgovFileScrty.encryptPassword(resetPasssword, userManageVO.getEmplyrId()));
+		userManageService.updatePassword(userManageVO);
+		model.addAttribute("userManageVO", userManageVO);
+		//여기는 나중에 손 봐야 될 곳ㅠㅠㅠㅠ
+		resultResetMsg = "success.common.update";
+		model.addAttribute("resultResetMsg", resultResetMsg);
+		
+		return "mapo/com/MapoUserPasswordUpdt";
+	}
+	
+
+	/**
+	 * 업무사용자 암호 수정 화면 이동
+	 * 
+	 * @param model        화면모델
+	 * @param commandMap   파라메터전달용 commandMap
+	 * @param userSearchVO 검색조건
+	 * @param userManageVO 사용자수정정보(비밀번호)
+	 * @return mapo/com/MapoUserPasswordUpdt
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "/mapo/MapoUserPasswordUpdtView.do")
+	public String updatePasswordView(ModelMap model, @RequestParam Map<String, Object> commandMap, @ModelAttribute("searchVO") UserDefaultVO userSearchVO, @ModelAttribute("userManageVO") UserManageVO userManageVO) throws Exception {
+
+		// 미인증 사용자에 대한 보안처리
+		Boolean isAuthenticated = EgovUserDetailsHelper.isAuthenticated();
+		if (!isAuthenticated) {
+			return "mapo/MapoMain";
+		}
+				
+		String userTyForPassword = (String) commandMap.get("userTyForPassword");
+		userManageVO.setUserTy(userTyForPassword);
+
+		model.addAttribute("userManageVO", userManageVO);
+		model.addAttribute("userSearchVO", userSearchVO);
+		return "mapo/com/MapoUserPasswordUpdt";
+	}
+
+}

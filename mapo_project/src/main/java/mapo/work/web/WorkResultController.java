@@ -1,0 +1,321 @@
+package mapo.work.web;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.dsjdf.jdf.DateTime;
+
+import egovframework.com.cmm.service.EgovFileMngService;
+import egovframework.com.cmm.service.EgovFileMngUtil;
+import egovframework.rte.fdl.property.EgovPropertyService;
+import egovframework.rte.psl.dataaccess.util.EgovMap;
+import egovframework.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
+
+import mapo.work.service.WorkService;
+import mapo.work.service.WorkVO;
+import mapo.work.service.WorkVO2;
+
+@Controller
+public class WorkResultController {
+
+	private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+               
+	// Service
+	@Resource(name = "workService")
+	private WorkService workService;
+
+	// 첨부파일 관련
+	@Resource(name = "EgovFileMngService")
+	private EgovFileMngService fileMngService;
+
+	@Resource(name = "EgovFileMngUtil")
+	private EgovFileMngUtil fileUtil;
+
+	/** EgovPropertyService */
+	@Resource(name = "propertiesService")
+	protected EgovPropertyService propertiesService;
+	
+	
+	/**
+	 * 배포결과 화면 이동
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("mapo/workResult.do")
+	public String WorkResult(@ModelAttribute("WorkVO") WorkVO workVO, ModelMap model) throws Exception {
+		
+		workVO.setSearchkeyword("workDist");
+		System.out.println("searchkeyword ---> " + workVO.getSearchkeyword());
+		
+		/* 진행상태 리스트 */
+		workVO.setCodeId("STE");
+		List<?> stepList = workService.selectWorkGubun(workVO);
+		model.addAttribute("resultStep", stepList);
+		System.out.println(stepList);
+
+		/* 업무구분 리스트 */
+		workVO.setCodeId("TAS");
+		List<?> gubunList = workService.selectWorkGubun(workVO);
+		model.addAttribute("resultGubun", gubunList);
+		
+
+		/* 검색 키워드 */
+		model.addAttribute("startDt", workVO.getStartDt());
+		model.addAttribute("endDt", workVO.getEndDt());
+		model.addAttribute("step", workVO.getStep());
+		model.addAttribute("taskIdx", workVO.getTaskIdx());
+		model.addAttribute("manager", workVO.getManager());
+		model.addAttribute("taskNm", workVO.getTaskNm());
+		model.addAttribute("taskContents", workVO.getTaskContents());
+
+		/*
+		 * 페이징
+		 */
+		/** EgovPropertyService.sample */
+		workVO.setPageUnit(propertiesService.getInt("pageUnit"));
+		workVO.setPageSize(propertiesService.getInt("pageSize"));
+
+		/** pageing */
+		PaginationInfo paginationInfo = new PaginationInfo();
+		paginationInfo.setCurrentPageNo(workVO.getPageIndex());
+		paginationInfo.setRecordCountPerPage(workVO.getPageUnit());
+		paginationInfo.setPageSize(workVO.getPageSize());
+
+		workVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
+		workVO.setLastIndex(paginationInfo.getLastRecordIndex());
+		workVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+
+		int resultTotal = workService.selectWorkTotal(workVO);
+		paginationInfo.setTotalRecordCount(resultTotal);				
+		model.addAttribute("paginationInfo", paginationInfo);
+
+		/* 배포 리스트 조회 */
+		List<?> resultList = workService.selectWorkList(workVO);
+		model.addAttribute("resultList", resultList);
+		model.addAttribute("total",resultTotal);
+		
+		return "mapo/work/WorkResult";
+	}
+	
+	/**
+	 * 배포결과 상세 화면(항목 포함)
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("mapo/workResultDetail.do")
+	public String workResultDetail(@ModelAttribute("WorkVO") WorkVO workVO, ModelMap model) throws Exception {
+		System.out.println("getTaskId 값 확인 ----> : " + workVO.getTaskId());
+		System.out.println("getCode 값 확인 ----> : " + workVO.getCode());
+		
+		/* 업무구분 조회(검색) */
+		workVO.setCodeId("TAS"); 
+		List<?> list = workService.selectWorkGubun(workVO);
+		model.addAttribute("resultGubun", list);
+		
+		/* 배포 진행 상태 조회(검색) */
+		workVO.setCodeId("REQ");
+		List<?> steList = workService.selectWorkGubun(workVO);
+		model.addAttribute("resultSte", steList);
+		
+		/* 검색 키워드 */
+		model.addAttribute("taskId", workVO.getTaskId());
+		model.addAttribute("code", workVO.getCode());
+
+		/*
+		 * 페이징
+		 */
+		/** EgovPropertyService.sample */
+		workVO.setPageUnit(propertiesService.getInt("pageUnit"));
+		workVO.setPageSize(propertiesService.getInt("pageSize"));
+
+		/** pageing */
+		PaginationInfo paginationInfo = new PaginationInfo();
+		paginationInfo.setCurrentPageNo(workVO.getPageIndex());
+		paginationInfo.setRecordCountPerPage(workVO.getPageUnit());
+		paginationInfo.setPageSize(workVO.getPageSize());
+
+		workVO.setFirstIndex(paginationInfo.getFirstRecordIndex());
+		workVO.setLastIndex(paginationInfo.getLastRecordIndex());
+		workVO.setRecordCountPerPage(paginationInfo.getRecordCountPerPage());
+
+//		int selectResultTotal = workService.selectResultItemTotal(workVO);
+//		System.out.println(" count 확인 ----> : " + selectResultTotal);
+//		paginationInfo.setTotalRecordCount(selectResultTotal);				
+		model.addAttribute("paginationInfo", paginationInfo);
+
+		/* 배포 리스트 조회(항목포함) */
+		/* 제목 리스트*/
+		List<?> selectResultList = workService.selectResultItemGubun(workVO);
+		/* 항목 제목 리스트*/
+		List<?> selectResultItem = workService.selectResultItem(workVO);
+		
+		int selectResultItemSize = workService.selectResultItemSize(workVO);
+		System.out.println("항목 갯수 제목 조회 : " + selectResultItemSize);
+		model.addAttribute("selectResultItemSize", selectResultItemSize);
+		/* 항목 값 리스트*/
+		String temp = workVO.getTaskId()+"";
+		workVO.setTempId(temp);
+		
+		List<?> selectresultItemValue = workService.selectResultItemValue(workVO);
+		System.out.println("resultItemValue 확인 ----> : " + selectresultItemValue);
+		System.out.println("selectResultItem 항목 제목 리스트 ----> : " + selectResultItem.size());
+		
+
+		model.addAttribute("selectResultList", selectResultList);
+//		model.addAttribute("selectResultTotal",selectResultTotal);
+		model.addAttribute("selectResultItem",selectResultItem);
+		model.addAttribute("selectresultItemValue",selectresultItemValue);
+		return "mapo/work/WorkResultDetail";
+	}
+	
+	/**
+	 * 배포결과 상세 승인완료
+	 * @param taskId
+	 * @param valueArr
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("mapo/workResultApproved.do")
+	@ResponseBody
+	public String workResultApproved(
+			@RequestParam(value = "taskId") int taskId, 
+			@RequestParam(value = "valueArr") List<String> valueArr, 
+			HttpServletRequest request) throws Exception {
+		WorkVO wo = new WorkVO();
+		wo.setTaskId(taskId);
+		int result = 0;
+		String msg = "";
+		
+		for(int i = 0; i<valueArr.size(); i++) {
+			wo.setOrgId(valueArr.get(i)); 
+			result = workService.workResultApproved(wo);
+		}
+		if(result > 0) {
+			msg = "OK";
+		}else {
+			msg ="fail";
+		}
+		return msg;
+	}
+	
+	/**
+	 * 배포결과 상세 수정요청
+	 * @param taskId
+	 * @param valueArr
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("mapo/workResultUpdateRequest.do")
+	@ResponseBody
+	public String workResultUpdateRequest(
+			@RequestParam(value = "taskId") int taskId, 
+			@RequestParam(value = "valueArr") List<String> valueArr, 
+			HttpServletRequest request) throws Exception {
+		WorkVO wo = new WorkVO();
+		wo.setTaskId(taskId);
+		int result = 0;
+		String msg = "";
+		
+		for(int i = 0; i<valueArr.size(); i++) {
+			wo.setOrgId(valueArr.get(i)); 
+			result = workService.workResultUpdateRequest(wo);
+		}
+		if(result > 0) {
+			msg = "OK";
+		}else {
+			msg ="fail";
+		}
+		return msg;
+	}
+
+	
+	
+	@RequestMapping("mapo/workComplete.do")
+	@ResponseBody
+	public String workComplete(
+			@RequestParam(value = "valueArr") List<String> valueArr, 
+			HttpServletRequest request) throws Exception {
+		System.out.println("workComplete C:ASLASSS : " );
+		WorkVO wo = new WorkVO();
+		
+		int result = 0;
+		String msg = "";
+		
+		for(int i = 0; i<valueArr.size(); i++) {
+			int value = Integer.parseInt(valueArr.get(i));
+			wo.setTaskId(value);
+			result = workService.workComplete(wo);
+		}
+		if(result > 0) {
+			msg = "OK";
+		}else {
+			msg ="fail";
+		}
+		return msg;
+	}
+	
+	
+	/**
+	 * 엑셀 다운로드
+	 * @param workVO
+	 * @param request
+	 * @param response
+	 * @param session
+	 * @return
+	 * @throws Exception
+	 */
+//	수정 중...
+//	@RequestMapping("mapo/listResultExcelDownload.do")
+//	@ResponseBody
+//	public ModelAndView selectCategoryList(@ModelAttribute("WorkVO2") WorkVO2 wo2, @RequestParam(value = "taskId") String taskId) throws Exception {
+//		ModelAndView mav = new ModelAndView("excelView");
+//	    Map<String, Object> dataMap = new HashMap<String, Object>();
+//	   	    
+//		
+//		/* 배포 리스트 조회(항목포함) */
+//		/* 제목 리스트*/
+//		//WorkVO2 wo2 = new WorkVO2();
+//		wo2.setTaskId(taskId);
+//		
+//		List<?> resultList = workService.selectResultItemGubun2(wo2);
+//	    String filename = "게시물목록_" + DateTime.getDateString();
+//	    
+//	    String[] columnArr = {"업무id", "진행상태", "업무구분", "업무제목", "기관명", "최초확인자", "최초확인일"}; 
+//	    String[] columnVarArr = {"taskId", "codeNm", "tasNm", "taskNm", "orgNm", "frstReadId", "frstReadDt"};
+//	            
+//	    dataMap.put("columnArr", columnArr);  //컬럼명
+//	    dataMap.put("columnVarArr", columnVarArr);  //db에서 가져온 list안에 있는 EgovMap에서 get할 때 필요한 변수명
+//	    dataMap.put("sheetNm", "게시물 목록");  //시트명
+//	    dataMap.put("list", resultList); //데이터가 담긴 리스트
+//	    
+//	  //  mav.setViewName("jsonView");
+//	    mav.addObject("dataMap", dataMap);
+//	    mav.addObject("filename", filename);
+//	    
+//		return mav;
+//	}
+	
+	
+	
+	
+	
+}

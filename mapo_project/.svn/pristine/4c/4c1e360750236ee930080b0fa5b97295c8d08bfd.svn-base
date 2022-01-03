@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="userManageDAO">
+
+<!-- selectUserList_S : 원본 -->
+<!--     <select id="selectUserList_S" resultType="egovMap">
+SELECT 
+    uniqId, userTy, userId , userNm, emailAdres, areaNo, middleTelno, endTelno, moblphonNo, groupId, sttus, sbscrbDe, pstinstMidCode, authorCode
+FROM(
+    SELECT
+        ESNTL_ID               uniqId,
+        'USR03'               userTy,
+        EMPLYR_ID             userId,
+        USER_NM             userNm,
+        EMAIL_ADRES           emailAdres,
+        AREA_NO               areaNo,
+        HOUSE_MIDDLE_TELNO      middleTelno,
+        HOUSE_END_TELNO         endTelno,
+        MBTLNUM           moblphonNo,
+        GROUP_ID              groupId,
+        EMPLYR_STTUS_CODE     sttus,
+        SBSCRB_DE             sbscrbDe,      
+        PSTINST_MID_CODE		pstinstMidCode,
+        AUTHOR_CODE				authorCode
+    FROM    COMTNEMPLYRINFO
+    ) A 
+        WHERE 1=1
+	     <if test='sbscrbSttus != null and sbscrbSttus neq "0" and sbscrbSttus neq ""'>
+          AND sttus LIKE  #{sbscrbSttus}
+		</if> 
+        <if test="@egovframework.com.cmm.util.EgovMybaitsUtil@isNotEmpty(searchKeyword)">
+        <if test="searchCondition == 0">AND
+            userId LIKE #{searchKeyword}
+        </if>
+        <if test="searchCondition == 1">AND
+            userNm LIKE '%' #{searchKeyword} '%'
+        </if>
+        </if>
+        
+        ORDER BY sbscrbDe DESC
+        LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+    </select> -->
+    
+<!-- selectUserList_S : 2021.09.29 수정 -->
+    <select id="selectUserList_S" resultType="egovMap">
+SELECT 
+    uniqId, userTy, userId , userNm, emailAdres, areaNo, middleTelno, endTelno, moblphonNo, groupId, sttus, sbscrbDe, pstinstMidCode, authorCode
+    <!-- 2021.09.29 기관 항목 추가-->
+    ,	pstinstCode
+    ,	groupNm
+    ,	codeIdNm
+    ,	codeNm
+
+FROM(
+       SELECT
+        ESNTL_ID     uniqId,
+        'USR03'               userTy,
+        EMPLYR_ID             userId,
+        USER_NM             userNm,
+        EMAIL_ADRES           emailAdres,
+        AREA_NO               areaNo,
+        HOUSE_MIDDLE_TELNO      middleTelno,
+        HOUSE_END_TELNO         endTelno,
+        MBTLNUM           moblphonNo,
+        EG1.GROUP_ID              groupId,
+        EMPLYR_STTUS_CODE     sttus,
+        SBSCRB_DE             sbscrbDe,     
+        PSTINST_MID_CODE        pstinstMidCode,        
+        AUTHOR_CODE             authorCode
+        
+        ,   EG1.PSTINST_CODE    pstinstCode
+        ,   EG2.GROUP_NM        groupNm 
+        ,   EG3.CODE_ID_NM      codeIdNm
+        ,   EG4.CODE_NM         codeNm
+    
+    FROM 
+
+    		COMTNEMPLYRINFO EG1
+
+    		LEFT OUTER JOIN COMTNAUTHORGROUPINFO EG2 
+    			ON EG1.GROUP_ID = EG2.GROUP_ID
+
+    		LEFT OUTER JOIN COMTCCMMNCODE EG3
+    			ON EG1.PSTINST_MID_CODE = EG3.CODE_ID 
+    			AND EG3.USE_AT = 'Y'
+        
+    		LEFT OUTER JOIN COMTCCMMNDETAILCODE EG4 	
+    			ON EG3.CODE_ID = EG4.CODE_ID
+    			AND EG1.PSTINST_CODE = EG4.CODE
+    			AND EG4.USE_AT = 'Y'
+      
+      WHERE 
+      		EG1.GROUP_ID = 'GROUP_00000000000000'
+        
+          
+UNION
+
+   SELECT
+        ESNTL_ID     uniqId,
+        'USR03'               userTy,
+        EMPLYR_ID             userId,
+        USER_NM             userNm,
+        EMAIL_ADRES           emailAdres,
+        AREA_NO               areaNo,
+        HOUSE_MIDDLE_TELNO      middleTelno,
+        HOUSE_END_TELNO         endTelno,
+        MBTLNUM           moblphonNo,
+        EG1.GROUP_ID              groupId,
+        EMPLYR_STTUS_CODE     sttus,
+        SBSCRB_DE             sbscrbDe,     
+        PSTINST_MID_CODE        pstinstMidCode,        
+        AUTHOR_CODE             authorCode
+        
+        ,   EG1.PSTINST_CODE    pstinstCode
+        ,   EG2.GROUP_NM        groupNm
+        ,   EG4.CODE_NM         codeIdNm   
+        ,   MP1.ORG_NM          codeNm
+        
+    FROM    
+    		COMTNEMPLYRINFO EG1
+            
+            LEFT OUTER JOIN COMTNAUTHORGROUPINFO EG2 
+                ON EG1.GROUP_ID = EG2.GROUP_ID
+                               
+            LEFT OUTER JOIN comtccmmndetailcode EG4
+                ON EG1.PSTINST_MID_CODE = EG4.CODE
+                AND EG4.USE_AT = 'Y'
+
+            LEFT OUTER JOIN MAPO_ORG MP1
+                ON EG1.PSTINST_CODE = MP1.ORG_ID
+                AND EG4.CODE = MP1.ORG_SC                
+                AND MP1.USE_YN = 'Y'
+                
+    WHERE 
+    		EG1.GROUP_ID = 'GROUP_00000000000001') UL
+    
+        WHERE 1=1
+	     <if test='sbscrbSttus != null and sbscrbSttus neq "0" and sbscrbSttus neq ""'>
+          AND sttus LIKE  #{sbscrbSttus}
+		</if> 
+        <if test="@egovframework.com.cmm.util.EgovMybaitsUtil@isNotEmpty(searchKeyword)">
+        <if test="searchCondition == 0">AND
+            <!-- userId LIKE #{searchKeyword} -->
+            userId LIKE '%' #{searchKeyword} '%'
+        </if>
+        <if test="searchCondition == 1">AND
+            userNm LIKE '%' #{searchKeyword} '%'
+        </if>
+        </if>
+        
+        ORDER BY sbscrbDe DESC
+        LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+    </select>
+    
+    <select id="selectUserListTotCnt_S" resultType="int">
+            SELECT COUNT(1) totcnt
+            FROM(
+            SELECT
+                ESNTL_ID               uniqId,
+                'USR03'               userTy,
+                EMPLYR_ID             userId,
+                USER_NM             userNm,
+                EMAIL_ADRES           emailAdres,
+                AREA_NO               areaNo,
+                HOUSE_MIDDLE_TELNO      middleTelno,
+                HOUSE_END_TELNO         endTelno,
+                MBTLNUM           moblphonNo,
+                GROUP_ID              groupId,
+                EMPLYR_STTUS_CODE     sttus,
+                SBSCRB_DE             sbscrbDe
+            FROM    COMTNEMPLYRINFO
+            ) A
+        WHERE 1=1
+	        <if test='sbscrbSttus != null and sbscrbSttus neq "0" and sbscrbSttus neq ""'>
+            AND sttus LIKE  #{sbscrbSttus}
+            </if>
+            <if test="@egovframework.com.cmm.util.EgovMybaitsUtil@isNotEmpty(searchKeyword)">
+            <if test="searchCondition == 0">AND
+                <!-- userId LIKE #{searchKeyword} -->
+                userId LIKE '%' #{searchKeyword} '%'
+            </if>
+            <if test="searchCondition == 1">AND
+                userNm LIKE '%' #{searchKeyword} '%'
+            </if>
+            </if>
+    </select>
+    
+    <insert id="insertUser_S">
+        
+            INSERT INTO COMTNEMPLYRINFO 
+                (   ESNTL_ID             ,
+                    EMPLYR_ID           ,
+                    USER_NM           ,
+                    PASSWORD            ,
+                    PASSWORD_HINT       ,
+                    PASSWORD_CNSR       ,
+                    EMPL_NO             ,
+                    IHIDNUM             ,
+                    SEXDSTN_CODE        ,
+                    BRTHDY                ,
+                    AREA_NO             ,
+                    HOUSE_MIDDLE_TELNO    ,
+                    HOUSE_END_TELNO       ,
+                    FXNUM               ,
+                    HOUSE_ADRES           ,
+                    DETAIL_ADRES        ,
+                    ZIP                 ,
+                    OFFM_TELNO          ,
+                    MBTLNUM         ,
+                    EMAIL_ADRES         ,
+                    OFCPS_NM            ,
+                    GROUP_ID            ,
+                    ORGNZT_ID           ,
+                    PSTINST_CODE          ,
+                    EMPLYR_STTUS_CODE   ,
+                    SBSCRB_DE           ,
+                    CRTFC_DN_VALUE      ,
+                    CHG_PWD_LAST_PNTTM  ,      
+                    PSTINST_MID_CODE	,
+                    AUTHOR_CODE
+                    )
+            VALUES (
+                    #{uniqId}            ,
+                    #{emplyrId}          ,
+                    #{emplyrNm}          ,
+                    #{password}          ,
+                    #{passwordHint}      ,
+                    #{passwordCnsr}      ,                   
+                    #{emplNo}            ,
+                    #{ihidnum}           ,
+                    #{sexdstnCode}       ,
+                    #{brth}              ,
+                    #{areaNo}            ,
+                    #{homemiddleTelno}   ,
+                    #{homeendTelno}      ,
+                    #{fxnum}             ,
+                    #{homeadres}         ,
+                    #{detailAdres}       ,
+                    #{zip}               ,
+                    #{offmTelno}         ,
+                    #{moblphonNo}        ,
+                    #{emailAdres}        ,
+                    #{ofcpsNm}           ,
+                    #{groupId}           ,
+                    #{orgnztId}          ,
+                    #{insttCode}         ,
+                    #{emplyrSttusCode}   ,
+                    sysdate()            ,
+                    #{subDn}             ,
+                    sysdate()            ,
+                    #{pstinstMidCode}	 ,
+                    #{authorCode}
+                    )
+        
+    </insert>
+    
+    <delete id="deleteUser_S">
+        
+            DELETE FROM COMTNEMPLYRINFO 
+            WHERE ESNTL_ID=#{delId}
+        
+    </delete>
+    
+    <select id="selectUser_S" resultType="egovframework.com.uss.umt.service.UserManageVO">
+        
+            SELECT
+                ESNTL_ID           uniqId            ,
+                'USR03'           userTy,
+            EMPLYR_ID         emplyrId          ,
+            USER_NM         emplyrNm          ,
+            PASSWORD          password          ,
+            PASSWORD_HINT     passwordHint      ,
+            PASSWORD_CNSR     passwordCnsr      ,
+            EMPL_NO           emplNo            ,
+            IHIDNUM           ihidnum           ,
+            SEXDSTN_CODE      sexdstnCode       ,
+            BRTHDY              brth              ,
+            AREA_NO           areaNo            ,
+            HOUSE_MIDDLE_TELNO  homemiddleTelno   ,
+            HOUSE_END_TELNO     homeendTelno      ,
+            FXNUM             fxnum             ,
+            HOUSE_ADRES         homeadres         ,
+            DETAIL_ADRES      detailAdres       ,
+            ZIP               zip               ,
+            OFFM_TELNO        offmTelno         ,
+            MBTLNUM       moblphonNo        ,
+            EMAIL_ADRES       emailAdres        ,
+            OFCPS_NM          ofcpsNm           ,
+            GROUP_ID          groupId           ,
+            ORGNZT_ID         orgnztId          ,
+            PSTINST_CODE        insttCode         ,
+            EMPLYR_STTUS_CODE emplyrSttusCode   , 
+            SBSCRB_DE         sbscrbDe          ,
+            CRTFC_DN_VALUE            subDn,
+            LOCK_AT        				 lockAt,
+            PSTINST_MID_CODE		pstinstMidCode,
+       		AUTHOR_CODE				authorCode
+        FROM COMTNEMPLYRINFO
+            WHERE ESNTL_ID=#{uniqId}
+        
+    </select>
+    
+    <update id="updateUser_S">
+        
+            UPDATE COMTNEMPLYRINFO 
+            SET EMPLYR_ID           = #{emplyrId}        , 
+                USER_NM           = #{emplyrNm}        ,
+                PASSWORD_HINT       = #{passwordHint}    ,
+                PASSWORD_CNSR       = #{passwordCnsr}    ,
+                EMPL_NO             = #{emplNo}          ,
+                IHIDNUM             = #{ihidnum}         ,
+                SEXDSTN_CODE        = #{sexdstnCode}     ,
+                BRTHDY                = #{brth}            ,
+                AREA_NO             = #{areaNo}          ,
+                HOUSE_MIDDLE_TELNO    = #{homemiddleTelno} ,
+                HOUSE_END_TELNO       = #{homeendTelno}    ,
+                FXNUM               = #{fxnum}           ,
+                HOUSE_ADRES           = #{homeadres}       ,
+                DETAIL_ADRES        = #{detailAdres}     ,
+                ZIP                 = #{zip}             ,
+                OFFM_TELNO          = #{offmTelno}       ,
+                MBTLNUM         = #{moblphonNo}      ,
+                EMAIL_ADRES         = #{emailAdres}      ,
+                OFCPS_NM            = #{ofcpsNm}         ,
+                GROUP_ID            = #{groupId}         ,
+                ORGNZT_ID           = #{orgnztId}        ,
+                PSTINST_CODE          = #{insttCode}       ,
+                EMPLYR_STTUS_CODE   = #{emplyrSttusCode} ,
+                CRTFC_DN_VALUE              = #{subDn}	,
+                PSTINST_MID_CODE	= #{pstinstMidCode}	,
+                AUTHOR_CODE			= #{authorCode}
+                
+            WHERE ESNTL_ID = #{uniqId}
+            
+    </update>
+    
+    <insert id="insertUserHistory_S">
+        
+            INSERT INTO COMTHEMPLYRINFOCHANGEDTLS 
+                (   EMPLYR_ID           ,
+                    EMPL_NO             ,
+                    SEXDSTN_CODE        ,
+                    BRTHDY                ,
+                    AREA_NO             ,
+                    HOUSE_MIDDLE_TELNO    ,
+                    HOUSE_END_TELNO       ,
+                    FXNUM               ,
+                    HOUSE_ADRES           ,
+                    DETAIL_ADRES        ,
+                    ZIP                 ,
+                    OFFM_TELNO          ,
+                    MBTLNUM         ,
+                    EMAIL_ADRES         ,
+                    GROUP_ID            ,
+                    ORGNZT_ID           ,
+                    PSTINST_CODE          ,
+                    EMPLYR_STTUS_CODE   ,
+                    ESNTL_ID             ,
+                    CHANGE_DE           ,
+                    PSTINST_MID_CODE	,
+                    AUTHOR_CODE
+                    )
+            SELECT 
+                    EMPLYR_ID           ,
+                    EMPL_NO             ,
+                    SEXDSTN_CODE        ,
+                    BRTHDY                ,
+                    AREA_NO             ,
+                    HOUSE_MIDDLE_TELNO    ,
+                    HOUSE_END_TELNO       ,
+                    FXNUM               ,
+                    HOUSE_ADRES           ,
+                    DETAIL_ADRES        ,
+                    ZIP                 ,
+                    OFFM_TELNO          ,
+                    MBTLNUM         ,
+                    EMAIL_ADRES         ,
+                    GROUP_ID            ,
+                    ORGNZT_ID           ,
+                    PSTINST_CODE          ,
+                    EMPLYR_STTUS_CODE   ,
+                    ESNTL_ID             ,
+                    now()				,
+                    PSTINST_MID_CODE	,
+                    AUTHOR_CODE
+            FROM COMTNEMPLYRINFO
+            WHERE ESNTL_ID = #{uniqId}
+        
+    </insert>
+    
+    <select id="checkIdDplct_S" resultType="int">
+        
+            SELECT COUNT(1) usedCnt
+                FROM(
+                SELECT
+                    EMPLYR_ID             userId
+                FROM    COMTNEMPLYRINFO
+                UNION ALL
+                SELECT
+                    ENTRPRS_MBER_ID        userId
+                FROM    COMTNENTRPRSMBER
+                UNION ALL
+                SELECT
+                    MBER_ID               userId
+                FROM    COMTNGNRLMBER
+                ) A
+            WHERE userId = #{checkId}
+        
+    </select>
+    
+    <update id="updatePassword_S">
+        
+            UPDATE COMTNEMPLYRINFO 
+            SET 
+                   PASSWORD   =  #{password}
+                 , CHG_PWD_LAST_PNTTM = sysdate()
+            WHERE  ESNTL_ID  = #{uniqId}
+        
+    </update>
+    
+    <select id="selectPassword_S" resultType="egovframework.com.uss.umt.service.UserManageVO">
+        
+            SELECT
+                    PASSWORD          password 
+            FROM    COMTNEMPLYRINFO
+            WHERE   ESNTL_ID=#{uniqId}
+        
+    </select>
+    
+    <update id="updateLockIncorrect">
+            UPDATE COMTNEMPLYRINFO 
+ 			   SET  LOCK_AT = NULL 
+			     ,  LOCK_CNT  = NULL 
+			     ,  LOCK_LAST_PNTTM = NULL 
+            WHERE  ESNTL_ID  = #{uniqId}
+    </update>
+
+</mapper>

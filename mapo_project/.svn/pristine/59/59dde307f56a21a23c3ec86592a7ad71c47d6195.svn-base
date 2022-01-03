@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="orgDAO">
+	<resultMap id="orgList" type="mapo.org.service.OrgVO">
+		<result property="orgId"		column="ORG_ID"/>
+		<result property="orgNm"		column="ORG_NM"/>
+		<result property="orgAddress"	column="ORG_ADDRESS"/>
+		<result property="orgTelNO"		column="ORG_TEL_NO"/>
+		<result property="orgBoss"		column="ORG_BOSS"/>
+		
+		<result property="orgLc"		column="ORG_LC"/>
+		<result property="orgMc"		column="ORG_MC"/>
+		<result property="orgSc"		column="ORG_SC"/>
+		
+		<result property="insertId"		column="INSERT_ID"/>
+		<result property="insertDt"		column="INSERT_DT"/>
+		<result property="updateId"		column="UPDATE_ID"/>
+		<result property="updateDt"		column="UPDATE_DT"/>
+		<result property="useYn"		column="USE_YN"/>
+		
+		<!-- 	공통 코드	 -->
+		<result property="clCode"		column="CL_CODE"/>
+		<result property="clCodeNm"		column="CL_CODE_NM"/>
+		
+		<result property="codeId"		column="CODE_ID"/>
+		<result property="codeIdNm"		column="CODE_ID_NM"/>
+		
+		<result property="codeN"		column="CODE"/>
+		<result property="codeNm"		column="CODE_NM"/>
+	
+		
+	</resultMap>
+	
+	<!-- 시설 리스트 조회 -->
+	<select id="selectOrgList" parameterType="mapo.work.service.WorkVO" resultMap="orgList">
+		SELECT 
+				 DISTINCT D.ORG_ID
+		         ,	A.CL_CODE_NM
+		         ,	B.CODE_ID_NM
+		         ,	C.CODE_NM
+		         ,	D.ORG_NM
+		  FROM 
+			   					comtccmmnclcode 	A
+			  	LEFT OUTER JOIN 	comtccmmncode 		B   ON A.CL_CODE  = B.CL_CODE AND A.USE_AT = B.USE_AT 
+			  	LEFT OUTER JOIN 	comtccmmndetailcode C 	ON B.CODE_ID  = C.CODE_ID AND B.USE_AT = C.USE_AT
+			  	LEFT OUTER JOIN 	mapo_org 			D   ON D.ORG_LC   = A.CL_CODE AND D.ORG_MC = B.CODE_ID AND D.ORG_SC = C.CODE
+		   WHERE 
+		   		SUBSTR(A.CL_CODE, 1, 2) = 'MP'
+	  			AND D.USE_YN = 'Y'
+			  	<if test="searchOrg != null and searchOrg != '' "> 
+			  	AND 	(	D.ORG_ID
+					  	,	A.CL_CODE_NM
+					  	,	B.CODE_ID_NM
+					  	,	C.CODE_NM
+					  	,	D.ORG_NM 	) 
+					  	IN (
+					  		SELECT 
+			            			D.ORG_ID
+			      		         ,	A.CL_CODE_NM
+			      		         ,	B.CODE_ID_NM
+			      		         ,	C.CODE_NM
+			      		         ,	D.ORG_NM
+			          		  FROM  
+			          			   					comtccmmnclcode 	A
+			          			  	LEFT OUTER JOIN 	comtccmmncode 		B   ON A.CL_CODE  = B.CL_CODE AND A.USE_AT = B.USE_AT 
+			          			  	LEFT OUTER JOIN 	comtccmmndetailcode C 	ON B.CODE_ID  = C.CODE_ID AND B.USE_AT = C.USE_AT
+			          			  	LEFT OUTER JOIN 	mapo_org 			D   ON D.ORG_LC   = A.CL_CODE AND D.ORG_MC = B.CODE_ID AND D.ORG_SC = C.CODE
+			        		  WHERE 
+			        		   		  SUBSTR(A.CL_CODE, 1, 2) = 'MP'
+			        	  			   AND D.USE_YN = 'Y'
+			        	       		AND 	A.CL_CODE_NM LIKE CONCAT ( '%', #{searchOrg, jdbcType=VARCHAR}, '%' )
+				       		        OR 		B.CODE_ID_NM LIKE CONCAT ( '%', #{searchOrg, jdbcType=VARCHAR}, '%' )
+				        	        OR 		C.CODE_NM LIKE CONCAT ( '%', #{searchOrg, jdbcType=VARCHAR}, '%' )
+				       		        OR 		D.ORG_NM  LIKE CONCAT ( '%', #{searchOrg, jdbcType=VARCHAR}, '%' )
+			      	       	)
+	       		</if>
+	       		<if test="org1 != null and org1 != ''"> 
+	       		 AND A.CL_CODE = #{org1, jdbcType=VARCHAR}
+	       		</if>
+	       		<if test="org2 != null and org2 != ''"> 
+	       		 AND B.CODE_ID = #{org2, jdbcType=VARCHAR}
+	       		</if>
+	       		<if test="org3 != null and org3 != ''"> 
+	       		 AND C.CODE = #{org3, jdbcType=VARCHAR}
+	       		</if> 	
+	       		<if test="org4 != null and org4 != ''"> 
+	       		 AND D.ORG_ID = #{org4, jdbcType=INTEGER}
+	       		</if> 	 
+	       	ORDER BY  
+	       		ORG_ID DESC
+			LIMIT #{recordCountPerPage, jdbcType=INTEGER} OFFSET #{firstIndex, jdbcType=INTEGER}
+		
+	</select>
+	
+	
+	
+	<!-- 시설 select option 조회-->
+	<select id="selectOrg1Nm" parameterType="String" resultType="string">
+		SELECT CL_CODE_NM FROM comtccmmnclcode WHERE cl_code = #{clCode, jdbcType=VARCHAR};
+	</select>
+	<select id="selectOrg2Nm" parameterType="String" resultType="string">
+		SELECT CODE_ID_NM FROM comtccmmncode WHERE code_id= #{codeId, jdbcType=VARCHAR};
+	</select>
+	<select id="selectOrg3Nm" parameterType="String" resultType="string">
+		SELECT CODE_NM FROM comtccmmndetailcode WHERE code = #{code, jdbcType=VARCHAR};
+	</select>
+	<select id="selectOrg4Nm" parameterType="String" resultType="string">
+		SELECT ORG_NM FROM mapo_org WHERE org_id = #{orgId, jdbcType=VARCHAR};
+	</select>
+	
+	<!-- 시설 갯수 조회 -->
+	<select id = "selectOrgListTotcnt" parameterType="mapo.work.service.WorkVO" resultType="int">
+   		 SELECT 
+   		 			count(*)
+		  FROM 
+				   						comtccmmnclcode 	A
+				  	LEFT OUTER JOIN 	comtccmmncode 		B   ON A.CL_CODE  = B.CL_CODE AND A.USE_AT = B.USE_AT 
+				  	LEFT OUTER JOIN 	comtccmmndetailcode C 	ON B.CODE_ID  = C.CODE_ID AND B.USE_AT = C.USE_AT
+				  	LEFT OUTER JOIN 	mapo_org 			D   ON D.ORG_LC   = A.CL_CODE AND D.ORG_MC = B.CODE_ID AND D.ORG_SC = C.CODE
+		   WHERE 
+		   		SUBSTR(A.CL_CODE, 1, 2) = 'MP'
+	  			AND D.USE_YN = 'Y'
+	  			
+			  	<if test="searchOrg != null and searchOrg != ''"> 
+			  	AND 	A.CL_CODE_NM LIKE CONCAT ( '%', #{searchOrg, jdbcType=VARCHAR}, '%' )
+	       		OR B.CODE_ID_NM LIKE CONCAT ( '%', #{searchOrg, jdbcType=VARCHAR}, '%' )
+	        	OR C.CODE_NM LIKE CONCAT ( '%', #{searchOrg, jdbcType=VARCHAR}, '%' )
+	       		OR D.ORG_NM  LIKE CONCAT ( '%', #{searchOrg, jdbcType=VARCHAR}, '%' )
+	       		</if>
+	       		<if test="org1 != null and org1 != ''"> 
+	       		 AND A.CL_CODE = #{org1, jdbcType=VARCHAR}
+	       		</if>
+	       		<if test="org2 != null and org2 != ''"> 
+	       		 AND B.CODE_ID = #{org2, jdbcType=VARCHAR}
+	       		</if>
+	       		<if test="org3 != null and org3 != ''"> 
+	       		 AND C.CODE = #{org3, jdbcType=VARCHAR}
+	       		</if> 	
+	       		<if test="org4 != null and org4 != ''"> 
+	       		 AND D.ORG_ID = #{org4, jdbcType=INTEGER}
+	       		</if> 	
+	       		
+	       
+	</select>
+	
+	<!-- 시설 등록-->
+	<insert id = "insertOrg" parameterType="mapo.org.service.OrgVO" > 
+		INSERT INTO mapo_org 
+		( 
+			     	ORG_NM
+			    ,	ORG_ADDRESS
+			    ,	ORG_TEL_NO
+			    ,	ORG_BOSS
+			    ,	ORG_LC
+			    
+			    ,	ORG_MC
+			    ,	ORG_SC
+			    ,	INSERT_ID
+			    ,	INSERT_DT
+			    ,	USE_YN
+	    ) 
+	    VALUES
+	    ( 
+			     	#{orgNm, 		jdbcType=VARCHAR}
+			    ,	#{orgAddress, 	jdbcType=VARCHAR}
+			    ,	#{orgTelNO, 	jdbcType=VARCHAR}
+			    ,	#{orgBoss, 		jdbcType=VARCHAR}
+			    ,	#{org1, 		jdbcType=VARCHAR}
+			    
+			    ,	#{org2, 		jdbcType=VARCHAR}
+			    ,	#{org3, 		jdbcType=VARCHAR}
+			    ,	#{insertId, 	jdbcType=VARCHAR}
+			    ,	SYSDATE()
+			    ,	'Y'
+	    )
+	</insert>
+	
+	<!-- 시설 상세 -->
+	<select id ="selectOrgDetail" parameterType="mapo.org.service.OrgVO"   resultType="mapo.org.service.OrgVO" >
+		SELECT
+			D.ORG_ID  
+	      , D.ORG_NM
+	      , D.ORG_ADDRESS
+	      , D.ORG_TEL_NO
+	      , D.ORG_BOSS
+	      
+		  , A.CL_CODE
+	      , A.CL_CODE_NM
+	      , B.CODE_ID
+	      , B.CODE_ID_NM
+	      , C.CODE
+	      , C.CODE_NM
+	  FROM 
+	   					comtccmmnclcode 	A
+	  LEFT OUTER JOIN 	comtccmmncode 		B   ON A.CL_CODE  = B.CL_CODE AND A.USE_AT = B.USE_AT 
+	  LEFT OUTER JOIN 	comtccmmndetailcode C 	ON B.CODE_ID  = C.CODE_ID AND B.USE_AT = C.USE_AT
+	  LEFT OUTER JOIN 	mapo_org 			D   ON D.ORG_LC   = A.CL_CODE AND D.ORG_MC = B.CODE_ID AND D.ORG_SC = C.CODE
+	  WHERE D.ORG_ID = #{orgId};
+	</select>
+	
+	<!-- 시설 수정 -->
+	<update id="updateOrg" parameterType="mapo.org.service.OrgVO" >
+		UPDATE 
+			mapo_org
+		SET 
+		     ORG_NM = #{orgNm, 		jdbcType=VARCHAR}
+		    ,ORG_ADDRESS = #{orgAddress, 	jdbcType=VARCHAR}
+		    ,ORG_TEL_NO = #{orgTelNO, 	jdbcType=VARCHAR}
+		    ,ORG_BOSS = #{orgBoss, 		jdbcType=VARCHAR}
+		    ,ORG_LC = #{org1, 		jdbcType=VARCHAR}
+		    
+		    ,ORG_MC  = #{org2, 		jdbcType=VARCHAR}
+		    ,ORG_SC = #{org3, 		jdbcType=VARCHAR}
+		    ,UPDATE_ID = #{updateId, 	jdbcType=VARCHAR}
+		    ,UPDATE_DT = SYSDATE()
+		WHERE ORG_ID = #{orgId}
+	</update>
+	
+	<!-- 시설 삭제 -->
+	<update id="deleteOrg" parameterType="int" >
+		UPDATE 
+			mapo_org 
+		SET 
+			use_yn = 'N'
+		WHERE 
+			ORG_ID = #{orgId};
+	</update>
+	
+	
+	
+
+</mapper>

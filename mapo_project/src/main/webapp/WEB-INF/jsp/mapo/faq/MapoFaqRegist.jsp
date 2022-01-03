@@ -1,0 +1,266 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="ui" uri="http://egovframework.gov/ctl/ui" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%@ taglib prefix="validator" uri="http://www.springmodules.org/tags/commons-validator" %>
+<%
+ /**
+  * @ Class Name 	: MapoFaqRegist.jsp
+  * @ Description 	: MapoFaqRegist 화면
+  * @ Modification Information
+  * @
+  * @  수정일             	 수정자              수정내용
+  * @ -----------  --------    ---------------------------
+  * @ 2021.09.01 	서지혜              최초 생성
+  *
+  *
+  *  
+  */
+%>
+
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<title>마포구청 업무 사이트</title>
+
+<!-- Custom fonts for this template-->
+<link 	rel="stylesheet" type="text/css" href="<c:url value="/css/bootstrapthema/vendor/fontawesome-free/css/all.min.css"/>">
+<link 	href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+<!-- Custom styles for this template-->
+<link rel="stylesheet" href="<c:url value="/css/bootstrapthema/css/sb-admin-2.min.css"/>">
+
+<!-- 공통 CSS 호출 -->
+<link rel="stylesheet" href="<c:url value="/css/mapo/custom.css"/>">
+
+<!-- Font-Awesome 5 호출 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.min.css"/>
+
+<!-- favicon -->
+<link rel="shortcut icon" type="image/x-icon" href="<c:url value="/css/mapo/favicon.ico"/>">
+
+<script type="text/javascript" src="<c:url value='/js/egovframework/com/cmm/fms/EgovMultiFiles.js'/>" ></script>
+<%-- <script type="text/javascript" src="<c:url value="/validator.do"/>"></script> --%>
+<script type="text/javascript" src="<c:url value="/mapo/validator.do"/>"></script>
+<validator:javascript formName="faqVO" staticJavascript="false" xhtml="true" cdata="false"/>
+
+</head>
+
+
+
+</head>
+<body  id="page-top" onLoad="fn_egov_init();">
+
+<!-- javascript warning tag  -->
+<noscript class="noScriptTitle"><spring:message code="common.noScriptTitle.msg" /></noscript>
+
+<!-- Page Wrapper -->
+<div id="wrapper">
+
+	<!-- Sidebar -->
+	<c:import url="../MapoMainLeft.jsp" />
+	
+	<!-- Content Wrapper -->
+	<div id="content-wrapper" class="d-flex flex-column">
+		<div id="content">
+
+			<!-- Topbar -->
+			<c:import url="../MapoMainTop.jsp" />
+			
+			<!-- Main Content -->
+			<div class="container col-auto">
+				<div class="row">
+					<div class="col-sm-6">
+						<p class="pageTitle">| FAQ 등록</p>
+					</div>
+				</div>
+
+				<form:form commandName="faqVO" action="${pageContext.request.contextPath}/mapo/insertFaq.do" method="post" onSubmit="fn_egov_regist_faq(document.forms[0]); return false;" enctype="multipart/form-data"> 
+				
+				<div class="card">  
+          			<div class="card-body">
+						<div class="table-responsive">
+						
+						<!-- 등록폼 -->
+						<table class="table table-borderless" summary="<spring:message code="common.summary.list" arguments="${pageTitle}" />">
+			
+						<colgroup>
+							<col style="width: ;">
+							<col style="width: ;">
+						</colgroup>
+						
+						<tbody>
+							<!-- 입력 -->
+							<c:set var="inputTxt"><spring:message code="input.input" /></c:set>
+							
+							<!-- 질문 제목   -->
+							<c:set var="title"><spring:message code="comUssOlhFaq.faqVO.qestnSj"/> </c:set>
+							<tr>
+								<th class="col-sm-2 line-bottom"><label for="qestnSj">${title} <span class="pilsu">*</span></label></th>
+								<td class="col-sm-10 line-bottom">
+								    <form:input path="qestnSj" title="${title} ${inputTxt}" maxlength="70" class="form-control"/>
+					   				<div><form:errors path="qestnSj" cssClass="error" /></div>     
+								</td>
+							</tr>
+					
+							<!-- 질문 내용  -->
+							<c:set var="title"><spring:message code="comUssOlhFaq.faqVO.qestnCn"/> </c:set>
+							<tr>
+								<th class="col-sm-2 line-bottom"><label for="qestnCn">${title } <span class="pilsu">*</span></label></th>
+								<td class="col-sm-10 line-bottom" colspan="3">
+									<form:textarea path="qestnCn" title="${title} ${inputTxt}" rows="9" class="form-control" style="resize:none"/>   
+									<div><form:errors path="qestnCn" cssClass="error" /></div>  
+								</td>
+							</tr>
+					
+							<!-- 답변 내용  -->
+							<c:set var="title"><spring:message code="comUssOlhFaq.faqVO.answerCn"/> </c:set>
+							<tr>
+								<th class="col-sm-2 line-bottom"><label for="answerCn">${title } <span class="pilsu">*</span></label></th>
+								<td class="col-sm-10 line-bottom" colspan="3">
+									<form:textarea path="answerCn" title="${title} ${inputTxt}" rows="9" class="form-control" style="resize:none"/>   
+									<div><form:errors path="answerCn" cssClass="error" /></div>  
+								</td>
+							</tr>
+							
+							<!-- 첨부파일  -->
+							<c:set var="title"><spring:message code="comUssOlhFaq.faqVO.atchFile"/></c:set>
+							<tr>
+								<th class="col-sm-2 line-bottom"><label for="file_1">${title}</label> </th>
+								<td class="col-sm-10 line-bottom">
+								<!-- attached file Start -->
+								<div class="custom-file col-sm-9">
+									<!-- <input name="file_1" id="egovComFileUploader" type="file" multiple/> --><!-- 첨부파일명 입력 -->
+									<input name="file_1" id="egovComFileUploader" type="file" class="custom-file-input" multiple/>
+									<label class="custom-file-label" for="egovComFileUploader" value=""> 첨부할 파일을 선택하세요</label>
+									<div id="egovComFileList"></div>
+								</div>
+														
+								<!-- attached file End -->
+								</td>
+							</tr>
+							
+						</tbody>
+						</table>
+					</div>
+				</div>
+			
+			 <div class="card-footer">
+			 	<div class="row">
+			 	<!-- 하단 버튼 -->	
+               	 <div class="col-sm-6 text-left">				
+						<!-- 목록 버튼 -->  				
+						<a href="<c:url value='/mapo/selectFaqList.do' />"  class="btn btn-outline-primary" title="<spring:message code="button.list" />  <spring:message code="input.button" />"><spring:message code="button.list" /></a>						
+				</div>		
+					<div class="col-sm-6 text-right">
+						<!-- 등록 버튼 --> 
+						<input type="submit" class="btn btn-info" value="<spring:message code="button.create" />" title="<spring:message code="button.create" /> <spring:message code="input.button" />" />
+					</div>									
+				</div>
+			</div>
+			</div>
+		</div>	
+				<input name="pageIndex" type="hidden" value="<c:out value='${searchVO.pageIndex}'/>"/>
+				<input name="cmd" type="hidden" value="<c:out value='save'/>">
+				</form:form>
+		</div>
+
+
+<script type="text/javascript">
+
+/* ********************************************************
+ * 초기화
+ ******************************************************** */
+function fn_egov_init(){
+
+	var maxFileNum = 3;
+	var multi_selector = new MultiSelector( document.getElementById( 'egovComFileList' ), maxFileNum );
+	multi_selector.addElement( document.getElementById( 'egovComFileUploader' ) );
+	//------------------------- 첨부파일 등록 End
+	
+	// 첫 입력란에 포커스
+	document.getElementById("faqVO").qestnSj.focus();
+
+}
+/* ********************************************************
+ * 저장처리화면
+ ******************************************************** */
+function fn_egov_regist_faq(form){
+	
+	var data = $("form").serializeArray();
+	
+	var chk = true;
+	
+	//밸리데이션 체크
+	$.each(data, function(key, data) {
+		
+		// 제목
+		if(this.name == "qestnSj" && this.value == "") {				
+			alert("제목을 입력하세요");
+			
+			chk = false;			
+			return false;				
+		}
+		
+		// 질문내용
+		if(this.name == "qestnCn" && this.value == "") {
+			alert("질문내용을 입력하세요");
+			
+			chk = false;
+			return false;
+		}
+		
+		// 답변내용
+		if(this.name == "answerCn" && this.value == "") {
+			alert("답변내용을 입력하세요");
+			
+			chk = false;
+			return false;
+		}
+	})
+
+	
+	if(!chk) return false;
+	
+	var result = confirm("등록하시겠습니까?");
+	
+	if(!result) {
+		return false;
+	}
+	
+	var resultExtension = EgovMultiFilesChecker.checkExtensions("egovComFileUploader", "<c:out value='${fileUploadExtensions}'/>"); // 결과가 false인경우 허용되지 않음
+	if (!resultExtension) return true;
+	
+	
+	var resultSize = EgovMultiFilesChecker.checkFileSize("egovComFileUploader", <c:out value='${fileUploadMaxSize}'/>); // 파일당 1M까지 허용 (1K=1024), 결과가 false인경우 허용되지 않음
+	if (!resultSize) return true;
+	
+	//input item Client-Side validate
+	if (!validateFaqVO(form)) {	
+		return false;
+	} else {
+		if(confirm("<spring:message code="common.regist.msg" />")){	
+			form.submit();	
+		}
+	} 
+}
+
+/* ********************************************************
+* 첨부파일
+******************************************************** */
+$("#egovComFileUploader").on('change', function(){	
+	$(this).next('.custom-file-label').html(event.target.files[0].name);
+});
+</script>
+</body>
+</html>

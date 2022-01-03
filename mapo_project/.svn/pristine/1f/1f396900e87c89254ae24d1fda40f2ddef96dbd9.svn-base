@@ -1,0 +1,486 @@
+package mapo.work.service.impl;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Repository;
+
+import egovframework.com.cmm.service.impl.EgovComAbstractDAO;
+import mapo.work.service.ExcelDto;
+import mapo.work.service.WorkVO;
+import mapo.work.service.WorkVO2;
+
+@Repository("workDAO")
+public class WorkDAO extends EgovComAbstractDAO{
+	
+	/**
+	 * 업무구분 조회
+	 * @param workVO
+	 * @return
+	 * @throws Exception
+	 */
+	public List<?> selectWorkStep(WorkVO workVO) {
+		return selectList("workDAO.selectWorkStep", workVO);
+	}
+
+	/**
+	 * 업무구분 조회
+	 * @param workVO
+	 * @return
+	 * @throws Exception
+	 */
+	public List<?> selectWorkGubun(WorkVO workVO) throws Exception {
+		return selectList("workDAO.selectWorkGubun", workVO);
+	}
+	
+	/**
+	 *  업무 저장
+	 * @param workVO
+	 * @return
+	 */
+	public int insertWork(WorkVO workVO) {
+		return insert("workDAO.insertWork",workVO);
+
+	}
+	
+	/**
+	 * 항목 저장
+	 * @param workVO
+	 * @return
+	 */
+	public int insertItem(ArrayList<WorkVO> workVO) {
+		return insert("workDAO.insertItem",workVO);
+	}
+
+
+	/**
+	 * 업무 Task_id컬럼 ,ITem_id 컬럼 조회
+	 * @return
+	 */
+	public int selectTaskId() {
+		return selectOne("workDAO.selectTaskId");
+	}
+	public int selectItemId() {
+		return selectOne("workDAO.selectItemId");
+	}
+	
+	/**
+	 * 시설 선택 저장
+	 * @param orgIdLists
+	 * @return
+	 */
+	public int insertFacilityList(ArrayList<Integer> orgIdLists) {
+		return insert("workDAO.insertFacilityList",orgIdLists);
+	}
+	
+	/**
+	 * 시설 선택 저장 전 기존 데이터 삭제
+	 * @return
+	 */
+	public int deleteFacilityList(WorkVO workVO) {
+		return delete("workDAO.deleteFacilityList", workVO);
+	}
+
+	
+	/**
+	 * 기관분류 (대분류)
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectDepth1(WorkVO workVO) {
+		return selectList("workDAO.selectDepth1", workVO);
+	}
+
+	/**
+	 * 기관분류 (중분류)
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectDepth2(WorkVO workVO) {
+		return selectList("workDAO.selectDepth2", workVO);
+	}
+
+	/**
+	 * 기관분류 (소분류)
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectDepth3(WorkVO workVO) {
+		return selectList("workDAO.selectDepth3", workVO);
+	}
+
+	/**
+	 * 기관분류 (기관코드) 
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectDepth4(WorkVO workVO) {
+		return selectList("workDAO.selectDepth4", workVO);
+	}
+	
+	/**
+	 * 업무리스트 조회
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectWorkList(WorkVO workVO) {
+		return selectList("workDAO.selectWorkList", workVO);
+	}
+	
+	
+	/**
+	 * 업무 갯수 조회
+	 * @param workVO
+	 * @return
+	 */
+	public int selectWorkTotal(WorkVO workVO) {
+		return selectOne("workDAO.selectWorkTotal", workVO);
+	}
+
+	/**
+	 * 업무 상세
+	 * @param workVO
+	 * @return
+	 */
+	
+	  public WorkVO selectWorkDetail(WorkVO workVO) { 
+		  return selectOne("workDAO.selectWorkDetail", workVO); 
+	  }
+	 
+	
+	/**
+	 * 업무 항목 리스트
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectItemList(WorkVO workVO) {
+		return selectList("workDAO.selectItemList", workVO);
+	}
+
+	
+	/**
+	 * 복지시설 리스트 조회
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectGthOrgList(WorkVO workVO) {
+		return selectList("workDAO.selectGthOrgList", workVO);
+	}
+
+	
+	/**
+	 * 공통코드 중분류 추가
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectMiddleCode(WorkVO workVO) {
+		return selectList("workDAO.selectMiddleCode", workVO);
+	}
+
+	/**
+	 * 업무저장
+	 * @param wo
+	 * @return
+	 */
+	public int insertItem2(WorkVO wo) {
+		return insert("workDAO.insertItem2", wo);
+	}
+
+	/**
+	 * 항목값 입력
+	 * @param workVO
+	 * @return
+	 */
+	public int insertItemValue(WorkVO workVO) {
+		return insert("workDAO.insertItemValue", workVO);
+	}
+
+	/**
+	 * 업무 업데이트
+	 * @param workVO
+	 * @return
+	 */
+	public int updateTask(WorkVO workVO) {
+		return update("workDAO.updateTask", workVO);
+	}
+
+	/**
+	 * 기존 기관 개수 카운트 
+	 * @param workVO
+	 * @return
+	 */
+	public int selectOrgCnt(WorkVO workVO) {
+		return selectOne("workDAO.selectOrgCnt", workVO);
+	}
+
+	/**
+	 * 기관리스트 저장
+	 * @param vo
+	 * @return
+	 */
+	public int insertOrgList(WorkVO vo) {
+		return insert("workDAO.insertOrgList", vo);
+	}
+	
+	/**
+	 * 업무배포 (기관 저장)
+	 * @param workVO
+	 * @return
+	 */
+	public int insertTaskDist(WorkVO workVO) {
+		return insert("workDAO.insertTaskDist", workVO);
+	}
+	
+
+	/**
+	 * 업무배포 (항목 저장)
+	 * @param workVO
+	 * @return
+	 */
+	public int insertTaskCheck(WorkVO workVO) {
+		return insert("workDAO.insertTaskCheck", workVO);
+	}
+
+	
+	/**
+	 * 업무 상태(STEP) 코드 변경
+	 * @param workVO
+	 * @return
+	 */
+	public int updateTaskStep(WorkVO workVO) {
+		return update("workDAO.updateTaskStep", workVO);
+	}
+
+	/**
+	 * 업무확인(복지시설)
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectWorkListOrg(WorkVO workVO) {	
+		return selectList("workDAO.selectWorkListOrg", workVO);
+	}
+
+	/**
+	 * 업무 담당자 조회
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectWorkManager(WorkVO workVO) {
+		return selectList("workDAO.selectWorkManager", workVO);
+	}
+
+	/**
+	 * 배포 리스트 조회
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectResultGubun(WorkVO workVO) {
+		return  selectList("workDAO.selectResultGubun", workVO);
+	}
+
+	/**
+	 * 배포 갯수 조회
+	 * @param workVO
+	 * @return
+	 */
+	public int selectResultTotal(WorkVO workVO) {
+		return selectOne("workDAO.selectResultTotal", workVO);
+	}
+	
+	/**
+	 * 배포 리스트 조회(항목 포함)
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectResultItemGubun(WorkVO workVO) {
+		return selectList("workDAO.selectResultItemGubun", workVO);
+	}
+	
+	/**
+	 * 엑셀 리스트 뽑기
+	 * @param excelDto
+	 * @return
+	 */
+	
+	/**
+	 * 배포 결과 (항목 제목 조회) 
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectResultItem(WorkVO workVO) {
+		return selectList("workDAO.selectResultItem", workVO);
+	}
+	
+	/**
+	 * 배포 결과 (항목 제목 갯수 조회) 
+	 * @param workVO
+	 * @return
+	 */
+	public int selectResultItemSize(WorkVO workVO) {
+		return selectOne("workDAO.selectResultItemSize", workVO);
+	}
+	
+	public List<?> selectResultItemValue(WorkVO workVO) {
+		return selectList("workDAO.selectResultItemValue", workVO);
+	}
+	
+	/**
+	 * 배포 갯수 조회(항목 포함)
+	 * @param workVO
+	 * @return
+	 */
+	public int selectResultItemTotal(WorkVO workVO) {
+		return selectOne("workDAO.selectResultItemTotal", workVO);
+	}
+
+	
+	/**
+	 * 배포결과 상세 승인 완료
+	 * @param workVO
+	 * @return
+	 */
+	public int workResultApproved(WorkVO workVO) {
+		return update("workDAO.workResultApproved",workVO);
+	}
+	
+	/**
+	 * 배포결과 상세 수정요청
+	 * @param workVO
+	 * @return
+	 */
+	public int workResultUpdateRequest(WorkVO workVO) {
+		return update("workDAO.workResultUpdateRequest",workVO);
+	}
+	
+	/**
+	 * 배포결과 업무완료
+	 * @param workVO
+	 * @return
+	 */
+	public int workCompleteDist(WorkVO workVO) {
+		return update("workDAO.workCompleteDist",workVO);
+	}
+	
+	public int workComplete(WorkVO workVO) {
+		return update("workDAO.workComplete",workVO);
+	}
+	
+	/**
+	 * 업무 기관 리스트 조회
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectWorkOrgList(WorkVO workVO) {
+		return  selectList("workDAO.selectWorkOrgList", workVO);
+	}
+
+	/**
+	 * 아이템 항목 개수 조회
+	 * @param workVO
+	 * @return
+	 */
+	public int selectWorkItemCnt(WorkVO workVO) {
+		return selectOne("workDAO.selectWorkItemCnt", workVO);
+	}
+
+	/**
+	 * 아이템  삭제
+	 * @param workVO
+	 * @return
+	 */
+	public int deleteWorkItem(WorkVO workVO) {
+		return delete("workDAO.deleteWorkItem", workVO);
+	}
+
+	/**
+	 * 업무폼 삭제
+	 * @param workVO
+	 * @return
+	 */
+	public int deleteWorkForm(WorkVO workVO) {
+		return delete("workDAO.deleteWorkForm", workVO);
+	}
+	
+	/**
+	 * 업무 갯수 조회(복지기관)
+	 * @param workVO
+	 * @return
+	 */
+	public int selectWorkTotalOrg(WorkVO workVO) {
+		return selectOne("workDAO.selectWorkTotalOrg", workVO);
+	}
+	
+	/**
+	 * 업무 항목 리스트
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectItemListOrg(WorkVO workVO) {
+		return selectList("workDAO.selectItemListOrg", workVO);
+	}
+
+	public int updateApproval(WorkVO workVO) {
+		return update("workDAO.updateApproval", workVO);
+	}
+	
+	/**
+	 * 승인 여부 조회
+	 * @param workVO
+	 * @return
+	 */
+	public WorkVO selectApproval(WorkVO workVO) {
+		return selectOne("workDAO.selectApproval", workVO);
+	}
+	
+	/**
+	 * 업무 확인여부 조회
+	 * @param workVO
+	 * @return
+	 */
+	public int updateCount(WorkVO workVO) {
+		return update("workDAO.updateCount", workVO);
+	}
+
+
+	public List<?> selectResultItemGubun2(WorkVO2 workVO) {
+		Map<Object, Object> map = new HashMap<Object, Object>();
+		map.put("taskId", workVO.getTaskId());
+		return selectList("workDAO.selectResultItemGubun2", map);
+	}
+
+
+	/**
+	 * 업무 미리보기(메인)
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectWorkMain(WorkVO workVO) {
+		return selectList("workDAO.selectWorkMain", workVO);
+	}
+	
+	/**
+	 * 업무 미리보기(메인)
+	 * @param workVO
+	 * @return
+	 */
+	public List<?> selectWorkMainOrg(WorkVO workVO) {
+		return selectList("workDAO.selectWorkMainOrg", workVO);
+	}
+	
+	/**
+	 * 업무수정 항목 삭제
+	 * @param workVO
+	 * @return
+	 */
+	public int workItemSelectedDelete(WorkVO workVO) {
+		return delete("workDAO.workItemSelectedDelete", workVO);
+	}
+
+	public int addItemFromWorkUpdate(WorkVO workVO) {
+		return insert("workDAO.addItemFromWorkUpdate",workVO);
+	}
+
+
+}

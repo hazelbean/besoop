@@ -1,0 +1,368 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" 	uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="ui"  uri="http://egovframework.gov/ctl/ui" %>
+<%@ taglib prefix="fn" 	uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%
+ /**
+  * @ Class Name 	: OrgUpdate.jsp
+  * @ Description 	: OrgUpdate 화면
+  * @ Modification Information
+  * @
+  * @  수정일             	 수정자              수정내용
+  * @ -----------  --------    ---------------------------
+  * @ 2021.09.14 	이은영              최초 생성
+  *
+  *  
+  */
+%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<title>마포구청 업무 사이트</title>
+
+<!-- Custom fonts for this template-->
+<link 	rel="stylesheet" type="text/css" href="<c:url value="/css/bootstrapthema/vendor/fontawesome-free/css/all.min.css"/>">
+<link 	href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+<!-- Custom styles for this template-->
+<link rel="stylesheet" href="<c:url value="/css/bootstrapthema/css/sb-admin-2.min.css"/>">
+
+<!-- 공통 CSS 호출 -->
+<link rel="stylesheet" href="<c:url value="/css/mapo/custom.css"/>">
+
+<!-- Font-Awesome 5 호출 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.min.css"/>
+
+<!-- favicon -->
+<link rel="shortcut icon" type="image/x-icon" href="<c:url value="/css/mapo/favicon.ico"/>">
+
+</head>
+<body>
+
+<!-- Page Wrapper -->
+<div id="wrapper">
+
+ <!-- Sidebar -->
+  <c:import url="../MapoMainLeft.jsp" />
+  
+	    <!-- Content Wrapper -->
+	  <div id="content-wrapper" class="d-flex flex-column">
+	    <div id="content">
+	    
+	    	<!-- Topbar -->
+      		<c:import url="../MapoMainTop.jsp" />
+      		
+	      		 <!-- Main Content -->
+			      <div class="container col-auto">
+			      	<div class="row">
+			          <div class="col-sm-6">
+			            <p class="pageTitle">| 복지시설  수정</p>
+			          </div>
+			        </div>
+			        
+			       <%--  <form id="" name = "" action ="<c:url value='/mapo/orgUpdate.do'/>" method="post" > --%>
+			        <form id="updateForm" name = "updateForm" method="post" >
+			        	<div class ="card">
+			        		<div class = "card-body">
+				        		<div class = "table-responsive">
+				        			<table class ="table table-borderless">
+				        				<tbody>
+				        					<tr>
+				        						<th class="col-sm-2 line-bottom" ><label for="orgNm">시설명</label> 
+				        						<td class="col-sm-10 line-bottom">
+				        							<input type="text" class="form-control w-50" id="orgNm" name="orgNm" placeholder="시설명을 입력하세요" value="${result.orgNm} ">
+				        						</td>
+				        					</tr>
+				        					<tr>
+				        						<th class="col-sm-2 line-bottom" ><label for="orgAddress">시설주소</label> 
+				        						<td class="col-sm-10 line-bottom">
+				        							<input type="text" class="form-control w-50" id="orgAddress" name="orgAddress"  value="${result.orgAddress}">
+				        						</td>
+				        					</tr>
+				        					<tr>
+				        						<th class="col-sm-2 line-bottom" ><label for="orgTelNO">대표전화</label> </th>
+				        						<td class="col-sm-10 line-bottom">
+				        							<input type="text" class="form-control w-50" id="orgTelNO" name="orgTelNO"  value="${result.orgTelNO}">
+				        						</td>
+				        					</tr>
+				        					<tr>
+				        						<th class="col-sm-2 line-bottom" ><label for="orgBoss">대표자</label> </th>
+				        						<td class="col-sm-10 line-bottom">
+				        							<input type="text" class="form-control w-50" id="orgBoss" name="orgBoss"  value="${result.orgBoss}">
+				        						</td>
+				        					</tr>
+				        					<tr>
+				        						<th class="col-sm-2 line-bottom" ><label for="selectLc">소속그룹</label></th>
+				        						<td class="col-sm-10 line-bottom">
+										           <select name="org1" id="org1" class="form-control w-50"> <!--  onchange="setOrg('org1', this.value)" -->
+														<option value="${result.clCode}">${result.clCodeNm}</option>
+														<c:forEach var="orgResult1" items="${resultDepth1}" varStatus="status">
+															<option value="${orgResult1.clCode}">${orgResult1.clCodeNm}</option>
+														</c:forEach>
+													</select>
+				        						</td>
+				        					</tr>
+				        					<tr>
+				        						<th class="col-sm-2 line-bottom" ><label for="selectMc">소속과(분류)</label></th>
+				        						<td class="col-sm-10 line-bottom">
+										           	<select name="org2" id="org2"  class="form-control w-50">
+														<option value="${result.codeId}">${result.codeIdNm}</option>								
+													</select>
+				        						</td>
+				        					</tr>
+				        					<tr>
+				        						<th class="col-sm-2 line-bottom" ><label for="selectSc">소속팀(시설)</label> </th>
+				        						<td class="col-sm-10 line-bottom">
+										            <select name="org3" id="org3"  class="form-control w-50">
+														<option value="${result.code}">${result.codeNm}</option>								
+													</select>
+				        						</td>
+				        					</tr>
+				        				<%-- 	<tr>
+				        						<th class="col-sm-2 line-bottom" ><label for="selectLc">소속그룹</label></th>
+				        						<td class="col-sm-10 line-bottom">
+										            <select name="selectLc" id="selectLc" class="form-control w-50">
+														<option value="${result.clCode}">${result.clCodeNm}</option>
+														<c:forEach var="listLc" items="${resultLc}" varStatus="status">
+															<option value="${listLc.clCode}">${listLc.clCodeNm}</option>
+														</c:forEach>
+													</select>
+				        						</td>
+				        					</tr>
+				        					<tr>
+				        						<th class="col-sm-2 line-bottom" ><label for="selectMc">소속과(분류)</label></th>
+				        						<td class="col-sm-10 line-bottom">
+										            <select name="selectMc" id="selectMc" class="form-control w-50">
+														<option value="${result.codeId}">${result.codeIdNm}</option>
+														<c:forEach var="listMc" items="${resultMc}" varStatus="status">
+															<option value="${listMc.codeId}">${listMc.codeIdNm}</option>
+														</c:forEach>
+													</select>
+				        						</td>
+				        					</tr>
+				        					<tr>
+				        						<th class="col-sm-2 line-bottom" ><label for="selectSc">소속팀(시설)</label> </th>
+				        						<td class="col-sm-10 line-bottom">
+										            <select name="selectSc" id="selectSc" class="form-control w-50">
+														<option value="${result.code}">${result.codeNm}</option>
+														<c:forEach var="listSc" items="${resultSc}" varStatus="status">
+															<option value="${listSc.code}" >${listSc.codeNm}</option>
+														</c:forEach>
+													</select>
+				        						</td>
+				        					</tr> --%>
+				        				</tbody>
+				        			</table>
+				        		</div> <!-- table-responsive -->
+			        		</div> <!-- card-body -->
+			        		<div class="card-footer">
+				        		 <div class="row">
+				        			<!-- 하단 버튼 --> 
+									<div class="col-sm-6 text-left">
+										<!-- <button type="button" class="btn btn-outline-primary">목록</button> -->
+										<a href="<c:url value='/mapo/orgList.do' />" class="btn btn-outline-primary" title="">목록</a>
+									</div>
+									<div class="col-sm-6 text-right">
+							            <!-- 등록 버튼 --> 
+							            <input class="btn btn-primary" type="submit" value="수정" onclick="return orgFormSave()"//>   	
+							             <input class="btn btn-secondary" type="submit" value="삭제" onclick="return orgFormDelete()"//>
+							        </div>    
+							        
+							     </div>
+			        		</div><!-- END card-body -->
+			        	</div><!-- END card -->
+			        	
+			        	<!--  시설ID / 수정자 ID 설정 -->
+			        	<input type = "hidden"  id="orgId" name  ="orgId" value = "${result.orgId }">
+						<input id="updateId" name="updateId" type="hidden" value="${loginVO.id}"/>
+			        </form>
+			      </div>
+      		
+	  	</div>
+	  </div>
+  
+</div>
+<script type="text/javascript">
+$(document).ready(function() {
+	
+	// 왼쪽 메뉴 아이콘 활성화
+	$("#menuOrg").addClass("active");
+	
+});
+
+/* 기관 : 대분류 선택 */
+$("#org1").change(function(){
+	
+	$("#org2, #org3, #org4").find('option').each(function(){
+		$(this).remove();
+	});
+	
+	$("#org2, #org3, #org4").append("<option value=''>선택</option>");
+	
+	var selectVal = $(this).val();
+	
+	getOrgList("org1", selectVal);		
+});
+
+
+
+
+/* 기관 : 중분류 선택 */
+$("#org2").change(function(){
+		
+	$("#org3, #org4").find('option').each(function(){
+		$(this).remove();
+	});
+	
+	$("#org3, #org4").append("<option value=''>선택</option>");
+	
+	var selectVal = $(this).val();
+	
+	getOrgList("org2", selectVal);
+});
+
+
+
+/* 기관 : 소분류 선택 */
+$("#org3").change(function(){
+		
+	$("#org4").find('option').each(function(){
+		$(this).remove();
+	});
+	
+	$("#org4").append("<option value=''>선택</option>");
+	
+	var selectVal = $(this).val();
+	
+	getOrgList("org3", selectVal);
+});
+
+/*************************************
+* 기관 선택 후 리스트 조회 및 설정
+*************************************/
+function getOrgList(mode, selectVal) {
+	
+	var url = "<c:url value='/mapo/selectOrg.do'/>?mode=" + mode;
+			
+	if ( selectVal != "" ) {
+		
+		$.ajax({
+			type: "POST",
+			data: {"code" : selectVal},
+			url: url,
+			dataType: "json",				// 리턴타입
+			success: function(data) {		// controller 
+				
+				console.log("data.result.length : " + data.result.length);
+			
+				if( data.result.length > 0 ) {
+					for ( var i=0; i < data.result.length; i++ ) {
+						
+						if ( mode == "org1" ) {
+							$("#org2").append("<option value='" + data.result[i]['codeId'] + "'>" + data.result[i]['codeIdNm'] + "</option>");
+						
+						} else if ( mode == "org2" ) {
+							$("#org3").append("<option value='" + data.result[i]['code'] + "'>" + data.result[i]['codeNm'] + "</option>");
+							
+						} else if ( mode == "org3" ) {
+							$("#org4").append("<option value='" + data.result[i]['orgId'] + "'>" + data.result[i]['orgNm'] + "</option>");
+						}
+						
+						
+					}
+					
+				} else {
+					
+					if ( mode == "org1" ) {
+						
+						$("#org2").find('option').remove();
+						$("#org2").append("<option value=''>선택</option>");
+						
+					} else if ( mode == "org2" ) {
+						
+						$("#org3").find('option').remove();
+						$("#org3").append("<option value=''>선택</option>");
+						
+					} else if ( mode == "org3" ) {
+						
+						$("#org4").find('option').remove();
+						$("#org4").append("<option value=''>선택</option>");
+					}
+				}
+			}
+		});
+	}
+}
+function orgFormSave(){
+	
+	//공백체크
+	$("#orgNm").val($.trim( $("#orgNm").val()) );
+	$("#orgAddress").val($.trim( $("#orgAddress").val()) );
+	$("#orgTelNO").val($.trim( $("#orgTelNO").val()) );
+	$("#orgBoss").val($.trim( $("#orgBoss").val()) );
+	
+	var formData = $("#updateForm").serialize();
+	
+	if(!confirm("수정 하시겠습니까?")) {
+		  return false;
+	}   
+	
+	$.ajax({  
+		type: "POST",
+		data: formData, 
+		url: "orgUpdate.do",
+		dataType: "text", 
+		success:function(result){ 
+			console.log(result)
+			if(result == "1"){
+				alert("수정이 완료되었습니다.");
+				location = "orgList.do";
+			}else{
+				alert("수정 실패\n관리자에게 연락해주세요.")
+			}
+		},
+		error: function(){ // 장애발생
+			alert("오류발생");
+		}
+	});
+}
+
+function orgFormDelete(){
+	
+	if(!confirm("삭제 하시겠습니까?")) {
+		  return false;
+	}
+
+	var orgId = $("#orgId").val();
+	console.log("orgId ----->" + orgId);
+	
+	$.ajax({  
+		type: "POST",
+		data: { "orgId" : orgId }, 
+		url: "orgDelete.do",
+		dataType: "text", 
+		success:function(result){ 
+			if(result == "1"){
+				alert("삭제가 완료되었습니다.");
+				location = "orgList.do";
+			}else{
+				alert("삭제 실패\n관리자에게 연락해주세요.")
+			}
+		},
+		error: function(){ // 장애발생
+			alert("오류발생");
+		}
+	});
+}
+</script>
+</body>
+</html>

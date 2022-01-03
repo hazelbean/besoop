@@ -1,0 +1,1266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="workDAO">
+	
+	<resultMap id="workList" type="mapo.work.service.WorkVO">
+		<result property="clCode"		column="CL_CODE"/>
+		<result property="clCodeNm"		column="CL_CODE_NM"/>
+		<result property="codeId" 		column="CODE_ID"/>
+		<result property="codeIdNm"		column="CODE_ID_NM"/>
+		<result property="code"			column="CODE"/>
+		<result property="codeNm"		column="CODE_NM"/>
+		<result property="orgId"		column="ORG_ID"/>
+		<result property="orgNm"		column="ORG_NM"/>
+		<result property="orgLc"		column="ORG_LC"/>
+		<result property="orgMc"		column="ORG_MC"/>
+		<result property="orgSc"		column="ORG_SC"/>	
+		<result property="taskId"		column="TASK_ID"/>
+		<result property="taskIdx"		column="TASK_IDX"/>
+		<result property="taskNm"		column="TASK_NM"/>
+		<result property="taskContents"	column="TASK_CONTENTS"/>
+		<result property="urgent"		column="URGENT"/>
+		<result property="closeDt"		column="CLOSE_DT"/>
+		<result property="closeTm"		column="CLOSE_TM"/>
+		<result property="manager"		column="MANAGER"/>
+		<result property="step"			column="STEP"/>
+		<result property="atchFileId"	column="ATCH_FILE_ID"/>
+		<result property="atchYn"		column="ATCH_YN"/>
+		
+		<result property="itemId"		column="ITEM_ID"/>
+		<result property="itemNm"		column="ITEM_NM"/>
+		<result property="itemDetail"	column="ITEM_DETAIL"/>
+		<result property="inputYn"		column="INPUT_YN"/>
+		<result property="textYn"		column="TEXT_YN"/>
+		<result property="itemValue"	column="ITEM_VALUE"/>
+		
+		<result property="steCd"		column="STE_CD"/>
+		<result property="steNm"		column="STE_NM"/>
+		<result property="tasCd"		column="TAS_CD"/>
+		<result property="tasNm"		column="TAS_NM"/>
+		<result property="reqCd"		column="REQ_CD"/>
+		<result property="reqNm"		column="REQ_NM"/>
+		<result property="myOrgId"		column="MY_ORG_ID"/>
+		
+		<result property="frstReadId"	column="FRST_READ_ID"/>
+		<result property="frstReadDt"	column="FRST_READ_DT"/>
+		<result property="updateDt"		column="UPDATE_DT"/>
+		<result property="updateId"		column="UPDATE_ID"/>
+		<result property="stepNm"		column="STEP_NM"/>
+		<result property="step"			column="STEP"/>
+		
+		<result property="item1"		column="item1"/>
+		<result property="item2"		column="item2"/>
+		<result property="item3"		column="item3"/>
+		<result property="item4"		column="item4"/>
+		<result property="item5"		column="item5"/>
+		<result property="item6"		column="item6"/>
+		<result property="item7"		column="item7"/>
+		<result property="item8"		column="item8"/>
+		<result property="item9"		column="item9"/>
+		<result property="item10"		column="item10"/>
+		<result property="item11"		column="item11"/>
+		<result property="item12"		column="item12"/>
+		<result property="item13"		column="item13"/>
+		<result property="item14"		column="item14"/>
+		<result property="item15"		column="item15"/>
+		<result property="item16"		column="item16"/>
+		<result property="item17"		column="item17"/>
+		<result property="item18"		column="item18"/>
+		<result property="item19"		column="item19"/>
+		<result property="item20"		column="item20"/>
+		<result property="item21"		column="item21"/>
+		<result property="item22"		column="item22"/>
+		<result property="item23"		column="item23"/>
+		<result property="item24"		column="item24"/>
+		<result property="item25"		column="item25"/>
+		<result property="item26"		column="item26"/>
+		<result property="item27"		column="item27"/>
+		<result property="item28"		column="item28"/>
+		<result property="item29"		column="item29"/>
+		<result property="item30"		column="item30"/>
+		
+		<result property="userId"			column="USER_ID"/>
+		<result property="updateNm"			column="UPDATE_NM"/>
+	
+	</resultMap>
+	
+	
+	
+	<!-- 업무구분 / 업무진행상태 -->
+	<select id="selectWorkGubun" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT T1.*  
+		FROM (		
+			SELECT
+						CODE_ID
+					,	CODE
+			  		,	CODE_NM
+			FROM 
+				comtccmmndetailcode
+			WHERE
+			      CODE_ID = #{codeId, jdbcType=VARCHAR}
+			  AND USE_AT  = 'Y'
+			 <if test="codeId != 'STE' and  codeId != 'REQ'">  
+			 	ORDER BY CODE_NM
+			 </if>
+		 ) T1
+		 	WHERE 1=1
+		 	<if test="codeId == 'STE' and  searchkeyword != null and searchkeyword == 'workDist'">  
+			 	 AND T1.CODE  IN ('STE030', 'STE040', 'STE050')
+			</if>
+	</select>
+	
+	
+	<!-- 업무 담당자 조회 -->
+	<select id="selectWorkManager" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT 
+					EMPLYR_ID AS CODE
+				, 	USER_NM   AS CODE_NM
+		FROM 
+				comtnemplyrinfo
+		WHERE 
+  				AUTHOR_CODE IN ('MA100', 'MA200')	
+	</select>
+	
+	
+	<!-- 업무 입력 저장  -->
+	<insert id="insertWork">
+		INSERT INTO mapo_work
+		(    
+				TASK_ID			<!-- 업무아이디 -->
+			, 	TASK_NM			<!-- 업무명 -->
+			,	TASK_CONTENTS	<!-- 업무내용 -->
+			,	URGENT			<!-- 긴급공지 -->
+			,	TASK_IDX		<!-- 업무구분 -->
+			
+			,	CLOSE_DT		<!-- 마감일자 -->
+			,	CLOSE_TM		<!-- 마감시간 -->
+			,	MANAGER			<!-- 담당자 -->
+			,	STEP			<!-- 업무진행단계 -->
+			,	ATCH_FILE_ID	<!-- 첨부파일 -->
+			
+			,	USE_YN			<!-- 업무사용여부 -->
+			,	INSERT_ID		<!-- 등록자 ID -->
+			,	INSERT_DT		<!-- 수정일자 -->
+		)
+		VALUE
+		(
+				#{taskId, 		jdbcType=VARCHAR}
+			, 	#{taskNm, 		jdbcType=VARCHAR}
+			,	#{taskContents, jdbcType=VARCHAR}
+			,	#{urgent, 		jdbcType=VARCHAR}
+			,	#{taskIdx, 		jdbcType=VARCHAR}
+			
+			,	#{closeDt, 		jdbcType=VARCHAR}
+			,	#{closeTm, 		jdbcType=VARCHAR}
+			,	#{manager, 		jdbcType=VARCHAR}
+			,	#{step, 		jdbcType=VARCHAR}
+			,	#{atchFileId, 	jdbcType=VARCHAR}
+			
+			,	'Y'
+			,	#{insertId, 	jdbcType=VARCHAR}
+			,	SYSDATE()
+		);
+	</insert>
+	
+	<!--  업무 업데이트 -->
+  	<update id="updateTask"  parameterType="mapo.work.service.WorkVO">
+		UPDATE mapo_work 
+		SET  
+		    TASK_NM 		= #{taskNm, 		jdbcType=VARCHAR}
+		  , TASK_CONTENTS 	= #{taskContents, 	jdbcType=VARCHAR}
+		  , URGENT 			= #{urgent, 		jdbcType=VARCHAR}
+		  , TASK_IDX 		= #{taskIdx, 		jdbcType=VARCHAR}
+		  , CLOSE_DT 		= #{closeDt, 		jdbcType=VARCHAR}
+		  , CLOSE_TM 		= #{closeTm, 		jdbcType=VARCHAR}
+		  , MANAGER 		= #{manager, 		jdbcType=VARCHAR}
+		  <if test="atchFileId != null and atchFileId != ''">  
+		  , ATCH_FILE_ID 	= #{atchFileId, 	jdbcType=VARCHAR}
+		  </if>
+		  , UPDATE_ID 		= #{updateId, 		jdbcType=VARCHAR}
+		  , UPDATE_DT 		= SYSDATE()		
+		WHERE 
+		  TASK_ID = #{taskId, jdbcType=VARCHAR}
+	</update>
+	
+	
+	<!-- 업무 Task_id max값 조회-->
+	<select id ="selectTaskId" parameterType="mapo.work.service.WorkVO"  resultType="int">
+		SELECT 
+			IFNULL(MAX(task_id), 0) + 1 
+		FROM 
+			mapo_work;
+	</select>
+	
+	
+	<!-- 업무 Item_id max값 조회-->
+	<select id ="selectItemId" parameterType="mapo.work.service.WorkVO"  resultType="int">
+		SELECT max(item_id)
+		FROM mapo_work_item;
+	</select>
+
+
+	<!-- 기존 항목 정보 확인 -->
+	<select id="selectWorkItemCnt" parameterType="mapo.work.service.WorkVO" resultType="int">
+		SELECT COUNT(*) 
+		FROM 
+		  	mapo_work_item
+		WHERE TASK_ID = #{taskId, 	jdbcType=VARCHAR}
+	</select>
+	
+	
+	<!--  항목정보 삭제 -->
+	<delete id="deleteWorkItem">
+		DELETE FROM 
+			mapo_work_item
+		WHERE
+			TASK_ID = #{taskId, 	jdbcType=VARCHAR}
+	</delete>
+	
+	
+	<!--  업무정보 폼 삭제 -->
+	<delete id="deleteWorkForm">
+		DELETE FROM 
+			mapo_work
+		WHERE
+			TASK_ID = #{taskId, 	jdbcType=VARCHAR}
+	</delete>
+	
+	
+	<!-- 항목 저장  (insert/update)  -->
+	<insert id="insertItem2"  parameterType="mapo.work.service.WorkVO">
+		INSERT INTO mapo_work_item 
+		(
+					ITEM_ID
+				, 	TASK_ID
+				, 	ITEM_NM			
+				, 	ITEM_DETAIL
+				, 	INPUT_YN
+				
+				,	TEXT_YN
+				,	INSERT_ID
+				,	INSERT_DT
+		) 
+		VALUES
+		(
+		        	<!--  #{itemId, 		jdbcType=VARCHAR} --> 
+		        	(SELECT IFNULL(MAX(A.ITEM_ID) + 1, 1) FROM mapo_work_item A WHERE A.TASK_ID = #{taskId, 		jdbcType=VARCHAR})
+		     	, 	#{taskId, 		jdbcType=VARCHAR}
+		      	, 	#{itemNm, 		jdbcType=VARCHAR}
+		      	, 	#{itemDetail, 	jdbcType=VARCHAR}
+		      	, 	#{inputYn, 		jdbcType=VARCHAR}
+		      	
+		      	, 	#{textYn, 		jdbcType=VARCHAR}
+				,	#{insertId, 	jdbcType=VARCHAR}
+				,	SYSDATE() 
+		)
+		ON DUPLICATE KEY UPDATE 
+				  	ITEM_NM 	= 	#{itemNm, 		jdbcType=VARCHAR}
+				, 	ITEM_DETAIL = 	#{itemDetail, 	jdbcType=VARCHAR}
+				, 	INPUT_YN 	= 	#{inputYn, 		jdbcType=VARCHAR}
+				, 	TEXT_YN 	= 	#{textYn, 		jdbcType=VARCHAR}
+				, 	UPDATE_ID 	= 	#{insertId, 	jdbcType=VARCHAR}
+				, 	UPDATE_DT 	= 	SYSDATE()
+	</insert>
+	
+		<!-- 업무수정 에서 항목 저장(insert)  -->
+	<insert id="addItemFromWorkUpdate"  parameterType="mapo.work.service.WorkVO">
+		 INSERT INTO mapo_work_item
+		 ( 
+		           ITEM_ID 
+		           , TASK_ID 
+		           , ITEM_NM
+		           , ITEM_DETAIL
+		           , INPUT_YN
+		           , TEXT_YN
+		           , INSERT_ID
+		           , INSERT_DT
+         )
+ 		VALUES 
+ 		( 
+		        	 (SELECT IFNULL(MAX(A.ITEM_ID) + 1, 1) FROM mapo_work_item A  WHERE A.TASK_ID = #{taskId})
+		            , #{taskId} 
+		            , #{itemNm, 		jdbcType=VARCHAR} 
+		            , '' 
+		            , 'Y'
+		            , 'N'
+		            , #{insertId, 		jdbcType=VARCHAR}
+		            , SYSDATE()
+         ); 
+	</insert>
+	
+	<!-- 기존 시설 정보 확인 -->
+	<select id="selectOrgCnt" parameterType="mapo.work.service.WorkVO" resultType="int">
+		SELECT COUNT(*) 
+		FROM 
+		  	mapo_work_org
+		WHERE TASK_ID = #{taskId, 	jdbcType=VARCHAR}
+	</select>
+	
+	<!--  시설 선택 저장 전 기존 데이터 삭제 -->
+	<delete id="deleteFacilityList">
+		DELETE 
+		FROM 
+			mapo_work_org
+		WHERE
+			TASK_ID = #{taskId, 	jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 시설 선택 저장 -->
+	<insert id= "insertOrgList">
+		INSERT INTO mapo_work_org
+			(
+					TASK_ID
+				, 	ORG_ID
+				,	ORG_LC
+				,	ORG_MC
+				,	ORG_SC
+								
+				,	ORG_NM
+				,	INSERT_ID
+				,	INSERT_DT
+			)
+			SELECT 
+					#{taskId, 	jdbcType=VARCHAR}
+				, 	org_id			
+				,	org_lc
+				,	org_mc
+				,	org_sc
+				
+				,	org_nm
+				,	#{insertId, jdbcType=VARCHAR}
+				,	SYSDATE()
+			FROM 
+					mapo_org
+			WHERE 	
+				org_id = #{orgId, jdbcType=VARCHAR}	
+	</insert>
+	
+	<!-- 1. 업무배포 (배포 테이블 저장) -->
+	<insert id= "insertTaskDist">
+		INSERT INTO mapo_work_dist
+		(
+		    TASK_ID
+		  , ORG_ID
+		  , APPROVAL
+		  , COUNT
+		  , INSERT_ID
+		  , INSERT_DT
+		)
+		SELECT 
+		    A.TASK_ID
+		  , B.ORG_ID
+		  , 'REQ010' AS APPROVAL
+		  , 0
+		  , #{insertId, jdbcType=VARCHAR}
+		  , SYSDATE()
+		FROM 
+						mapo_work A
+		LEFT OUTER JOIN mapo_work_org B ON A.TASK_ID = B.TASK_ID
+		WHERE 
+			A.TASK_ID = #{taskId, jdbcType=VARCHAR}	
+	</insert> 
+	
+	<!-- 2. 업무배포 (기관별 항목 저장) -->
+	<insert id= "insertTaskCheck">
+		INSERT INTO mapo_work_check
+		(
+		    TASK_ID
+		  , ORG_ID
+		  , ITEM_ID
+		  , INSERT_ID
+		  , INSERT_DT
+		)  
+		  
+		SELECT 
+		    A.TASK_ID
+		  , B.ORG_ID
+		  , C.ITEM_ID
+		  , #{insertId, jdbcType=VARCHAR}
+		  , SYSDATE()
+		FROM 
+						mapo_work A
+		LEFT OUTER JOIN mapo_work_org B  ON A.TASK_ID = B.TASK_ID
+		LEFT OUTER JOIN mapo_work_item C ON A.TASK_ID = C.TASK_ID
+		WHERE 
+		  A.TASK_ID = #{taskId, jdbcType=VARCHAR}	
+	</insert> 
+	
+	<!-- 3. 업무배포 상태코드 변경 -->
+	<update id="updateTaskStep">
+		UPDATE 
+			mapo_work 
+		SET
+		  STEP 		= #{step, jdbcType=VARCHAR}
+		, UPDATE_ID = #{insertId, jdbcType=VARCHAR}
+		, UPDATE_DT = SYSDATE()
+		WHERE 
+		  TASK_ID 	= #{taskId, jdbcType=VARCHAR}	
+	</update>
+
+	
+
+
+	<!-- 기관 대분류 조회 -->
+	<select id="selectDepth1" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT 
+		    DISTINCT 	A.CL_CODE  			    
+		  , 			A.CL_CODE_NM        		 
+	  FROM 
+	    				comtccmmnclcode 	A
+	  LEFT OUTER JOIN 	comtccmmncode 		B   ON A.CL_CODE  = B.CL_CODE AND A.USE_AT = B.USE_AT 
+	  LEFT OUTER JOIN 	comtccmmndetailcode C 	ON B.CODE_ID  = C.CODE_ID AND B.USE_AT = C.USE_AT
+	  LEFT OUTER JOIN 	mapo_org 			D   ON D.ORG_LC   = A.CL_CODE AND D.ORG_MC = B.CODE_ID AND D.ORG_SC = C.CODE	 
+	  WHERE
+	        	SUBSTR(A.CL_CODE, 1, 2) = 'MP'
+	    AND 	B.USE_AT = 'Y'
+	    AND 	D.USE_YN = 'Y'
+	</select>
+	
+	
+	<!-- 기관 중분류 조회 -->
+	<select id="selectDepth2" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT 
+			    DISTINCT B.CODE_ID
+			  , B.CODE_ID_NM
+			  , A.CL_CODE
+			  , A.CL_CODE_NM
+	  FROM 
+	   					comtccmmnclcode 	A
+	  LEFT OUTER JOIN 	comtccmmncode 		B   ON A.CL_CODE  = B.CL_CODE AND A.USE_AT = B.USE_AT 
+	  LEFT OUTER JOIN 	comtccmmndetailcode C 	ON B.CODE_ID  = C.CODE_ID AND B.USE_AT = C.USE_AT
+	  LEFT OUTER JOIN 	mapo_org 			D   ON D.ORG_LC   = A.CL_CODE AND D.ORG_MC = B.CODE_ID AND D.ORG_SC = C.CODE
+	  WHERE
+	        	SUBSTR(A.CL_CODE, 1, 2) = 'MP'
+	  	AND 	B.USE_AT = 'Y'
+	  	AND 	D.USE_YN = 'Y'
+	  <if test="code != null and code != ''"> 
+	  	AND   A.CL_CODE = #{code, jdbcType=VARCHAR}
+	  </if>
+	</select>
+	
+	
+	<!-- 기관 소분류 조회 -->
+	<select id="selectDepth3" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT 
+			   	DISTINCT C.CODE
+			  , C.CODE_NM
+			  , B.CODE_ID
+			  , B.CODE_ID_NM
+	  FROM 
+	   					comtccmmnclcode 	A
+	  LEFT OUTER JOIN 	comtccmmncode 		B   ON A.CL_CODE  = B.CL_CODE AND A.USE_AT = B.USE_AT 
+	  LEFT OUTER JOIN 	comtccmmndetailcode C 	ON B.CODE_ID  = C.CODE_ID AND B.USE_AT = C.USE_AT
+	  LEFT OUTER JOIN 	mapo_org 			D   ON D.ORG_LC   = A.CL_CODE AND D.ORG_MC = B.CODE_ID AND D.ORG_SC = C.CODE
+	  WHERE
+	        	SUBSTR(A.CL_CODE, 1, 2) = 'MP'
+	  	AND 	B.USE_AT = 'Y'
+	  	AND 	D.USE_YN = 'Y'
+	 <if test="code != null and code != ''"> 
+	  	AND		B.CODE_ID = #{code, jdbcType=VARCHAR}
+	  </if>
+	</select>
+	
+	
+	<!-- 기관 복지시설 조회 -->
+	<select id="selectDepth4" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT 
+			   	DISTINCT D.ORG_ID
+			  , D.ORG_NM
+			  , D.ORG_SC
+			  , C.CODE
+			  , C.CODE_NM
+	  FROM 
+	   					comtccmmnclcode 	A
+	  LEFT OUTER JOIN 	comtccmmncode 		B   ON A.CL_CODE  = B.CL_CODE AND A.USE_AT = B.USE_AT 
+	  LEFT OUTER JOIN 	comtccmmndetailcode C 	ON B.CODE_ID  = C.CODE_ID AND B.USE_AT = C.USE_AT
+	  LEFT OUTER JOIN 	mapo_org 			D   ON D.ORG_LC   = A.CL_CODE AND D.ORG_MC = B.CODE_ID AND D.ORG_SC = C.CODE
+	  WHERE
+	        	SUBSTR(A.CL_CODE, 1, 2) = 'MP'
+	  	AND 	B.USE_AT = 'Y'
+	  	AND 	D.USE_YN = 'Y'
+	  <if test="code != null and code != ''"> 
+	  	AND		C.CODE = #{code, jdbcType=VARCHAR}
+	  </if>
+	</select>
+	
+	
+	<!-- 업무확인(마포구청) -->
+	<select id="selectWorkList" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT 
+				T1.* 
+		FROM
+			(	SELECT	
+						A.TASK_ID
+					,	A.TASK_IDX
+				    ,	A.TASK_NM
+				    ,	A.TASK_CONTENTS
+				    ,	A.MANAGER		AS MANAGER_ID
+				    ,	A.STEP 
+		            ,	A.CLOSE_DT
+				    ,	A.CLOSE_TM
+				    
+				    ,	B.CODE STE_CD
+				    ,	B.CODE_NM STE_NM
+				    
+		            ,	C.CODE TAS_CD
+				    ,	C.CODE_NM TAS_NM	 
+					,	D.USER_NM		AS MANAGER
+					, 	A.URGENT
+          			, 	A.ATCH_FILE_ID
+          			, 	CASE WHEN IFNULL(A.ATCH_FILE_ID, '') = '' THEN 'N' ELSE 'Y' END ATCH_YN
+				
+				FROM 
+						mapo_work A
+						LEFT OUTER JOIN	comtccmmndetailcode B ON A.STEP 	= B.CODE
+						LEFT OUTER JOIN comtccmmndetailcode C ON A.TASK_IDX = C.CODE
+						LEFT OUTER JOIN comtnemplyrinfo		D ON A.MANAGER	= D.EMPLYR_ID
+						
+				WHERE	
+						1=1
+			  			<if test="taskIdx != null and taskIdx != ''"> 
+						AND TASK_IDX = #{taskIdx, jdbcType=VARCHAR}
+						</if>
+			  			<if test="taskNm != null and taskNm != '' or taskContents != null and taskContents != ''"> 
+							AND
+								(
+								TASK_NM LIKE CONCAT('%', #{taskNm, jdbcType=VARCHAR}, '%')
+							OR	TASK_CONTENTS LIKE CONCAT('%', #{taskContents, jdbcType=VARCHAR}, '%')
+								)
+						</if>
+						<if test="manager != null and manager != ''"> 
+						AND MANAGER = #{manager, jdbcType=VARCHAR}
+						</if>						
+						<if test="step != null and step != ''"> 
+						AND STEP = #{step, jdbcType=VARCHAR}
+						</if>						
+						<if test="startDt != null and startDt != '' and endDt != null and endDt != ''"> 
+						AND CLOSE_DT BETWEEN #{startDt, jdbcType=VARCHAR} AND #{endDt, jdbcType=VARCHAR}
+						</if>
+												
+				ORDER BY 
+						TASK_ID DESC)	T1
+				WHERE 1=1
+						<if test="searchkeyword	!= null and searchkeyword == 'workDist'">
+						AND T1.STEP IN ('STE030', 'STE040', 'STE050')
+						</if>
+							
+ 				LIMIT #{recordCountPerPage, jdbcType=INTEGER} OFFSET #{firstIndex, jdbcType=INTEGER}		
+	</select>
+	
+	<!-- 업무수정에서 항목 삭제 -->
+	<delete id="workItemSelectedDelete" parameterType="mapo.work.service.WorkVO">
+			DELETE FROM 
+				mapo_work_item
+			WHERE
+				TASK_ID = #{taskId, jdbcType=VARCHAR}
+				AND ITEM_ID = #{itemId};
+	</delete>
+	
+	
+	<!-- 메인 업무 미리보기 리스트 -->
+	<select id="selectWorkMain" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT 
+				T1.* 
+		FROM
+			(	SELECT	
+						A.TASK_ID
+					,	A.TASK_IDX
+				    ,	A.TASK_NM
+				    ,	A.TASK_CONTENTS
+				    ,	A.MANAGER		AS MANAGER_ID
+				    ,	A.STEP 
+		            ,	A.CLOSE_DT
+				    ,	A.CLOSE_TM
+				    
+				    ,	B.CODE STE_CD
+				    ,	B.CODE_NM STE_NM
+				    
+		            ,	C.CODE TAS_CD
+				    ,	C.CODE_NM TAS_NM	 
+					,	D.USER_NM		AS MANAGER
+					, 	A.URGENT
+          			, 	A.ATCH_FILE_ID
+          			, 	CASE WHEN IFNULL(A.ATCH_FILE_ID, '') = '' THEN 'N' ELSE 'Y' END ATCH_YN
+				
+				FROM 
+						mapo_work A
+						LEFT OUTER JOIN	comtccmmndetailcode B ON A.STEP 	= B.CODE
+						LEFT OUTER JOIN comtccmmndetailcode C ON A.TASK_IDX = C.CODE
+						LEFT OUTER JOIN comtnemplyrinfo		D ON A.MANAGER	= D.EMPLYR_ID
+						
+				WHERE	
+						1=1
+			  			<if test="taskIdx != null and taskIdx != ''"> 
+						AND TASK_IDX = #{taskIdx, jdbcType=VARCHAR}
+						</if>
+			  			<if test="taskNm != null and taskNm != '' or taskContents != null and taskContents != ''"> 
+							AND
+								(
+								TASK_NM LIKE CONCAT('%', #{taskNm, jdbcType=VARCHAR}, '%')
+							OR	TASK_CONTENTS LIKE CONCAT('%', #{taskContents, jdbcType=VARCHAR}, '%')
+								)
+						</if>
+						<if test="manager != null and manager != ''"> 
+						AND MANAGER = #{manager, jdbcType=VARCHAR}
+						</if>						
+						<if test="step != null and step != ''"> 
+						AND STEP = #{step, jdbcType=VARCHAR}
+						</if>						
+						<if test="startDt != null and startDt != '' and endDt != null and endDt != ''"> 
+						AND CLOSE_DT BETWEEN #{startDt, jdbcType=VARCHAR} AND #{endDt, jdbcType=VARCHAR}
+						</if>
+												
+				ORDER BY 
+						TASK_ID DESC)	T1
+				WHERE 1=1
+						<if test="searchkeyword	!= null and searchkeyword == 'workDist'">
+						AND T1.STEP IN ('STE030', 'STE040', 'STE050')
+						</if>	
+	</select>
+	
+	<!-- 업무확인(복지기관) -->
+	<select id="selectWorkListOrg" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT 
+				WLO.* 
+		FROM
+			(	SELECT	
+						DISTINCT WL1.TASK_ID
+					,	WL1.ORG_ID				    
+				    
+					,	WL2.TASK_ID TASK_ID2				
+				    ,	WL2.TASK_NM
+				    ,	WL2.TASK_CONTENTS
+				    ,	WL2.URGENT
+				    ,	WL2.TASK_IDX
+				    ,	WL2.STEP
+		            ,	WL2.CLOSE_DT
+				    ,	WL2.CLOSE_TM
+				    ,	WL2.MANAGER
+				    ,	WL2.ATCH_FILE_ID
+				    , 	CASE WHEN IFNULL(WL2.ATCH_FILE_ID, '') = '' THEN 'N' ELSE 'Y' END ATCH_YN
+				    
+				    ,	WL3.TASK_ID TASK_ID3
+				    ,	WL3.ORG_ID ORG_ID2
+				    ,	WL3.APPROVAL				    
+
+				    ,	WL4.CODE REQ_CD
+				    ,	WL4.CODE_NM REQ_NM
+				    
+		            ,	WL5.CODE TAS_CD
+				    ,	WL5.CODE_NM TAS_NM
+				    
+				FROM 
+						mapo_work_check WL1
+						LEFT OUTER JOIN mapo_work WL2	ON	WL2.TASK_ID = WL1.TASK_ID	
+						LEFT OUTER JOIN mapo_work_dist WL3	ON	WL3.TASK_ID = WL1.TASK_ID AND WL3.ORG_ID = WL1.ORG_ID											
+						LEFT OUTER JOIN comtccmmndetailcode WL4	ON	WL4.CODE = WL3.APPROVAL
+						LEFT OUTER JOIN comtccmmndetailcode WL5 ON	WL5.CODE = WL2.TASK_IDX
+						<!-- LEFT OUTER JOIN comtnemplyrinfo WL5 ON	WL2.ORG_ID = WL5.PSTINST_CODE -->
+						
+				WHERE	
+						1=1
+			  			<if test="taskIdx != null and taskIdx != ''"> 
+							AND TASK_IDX = #{taskIdx, jdbcType=VARCHAR}
+						</if>
+			  			<if test="taskNm != null and taskNm != '' or taskContents != null and taskContents != ''"> 
+							AND
+								(
+								TASK_NM LIKE CONCAT('%', #{taskNm, jdbcType=VARCHAR}, '%')
+							OR	TASK_CONTENTS LIKE CONCAT('%', #{taskContents, jdbcType=VARCHAR}, '%')
+								)
+						</if>
+						<if test="manager != null and manager != ''"> 
+							AND MANAGER = #{manager, jdbcType=VARCHAR}
+						</if>						
+						<if test="approval != null and approval != ''"> 
+							AND APPROVAL = #{approval, jdbcType=VARCHAR}
+						</if>						
+						<if test="startDt != null and startDt != '' and endDt != null and endDt != ''"> 
+							AND CLOSE_DT BETWEEN #{startDt, jdbcType=VARCHAR} AND #{endDt, jdbcType=VARCHAR}
+						</if>
+						AND WL1.ORG_ID = #{myOrgId, jdbcType=VARCHAR}
+												
+				ORDER BY 
+						WL1.TASK_ID DESC)	WLO
+					
+ 				LIMIT #{recordCountPerPage, jdbcType=INTEGER} OFFSET #{firstIndex, jdbcType=INTEGER}		
+	</select>
+	
+		<!-- 업무확인(복지기관) -->
+	<select id="selectWorkMainOrg" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT 
+				WLO.* 
+		FROM
+			(	SELECT	
+						DISTINCT WL1.TASK_ID
+					,	WL1.ORG_ID				    
+				    
+					,	WL2.TASK_ID TASK_ID2				
+				    ,	WL2.TASK_NM
+				    ,	WL2.TASK_CONTENTS
+				    ,	WL2.URGENT
+				    ,	WL2.TASK_IDX
+				    ,	WL2.STEP
+		            ,	WL2.CLOSE_DT
+				    ,	WL2.CLOSE_TM
+				    ,	WL2.MANAGER
+				    
+				    ,	WL3.TASK_ID TASK_ID3
+				    ,	WL3.ORG_ID ORG_ID2
+				    ,	WL3.APPROVAL				    
+
+				    ,	WL4.CODE REQ_CD
+				    ,	WL4.CODE_NM REQ_NM
+				    
+		            ,	WL5.CODE TAS_CD
+				    ,	WL5.CODE_NM TAS_NM
+				    
+				FROM 
+						mapo_work_check WL1
+						LEFT OUTER JOIN mapo_work WL2	ON	WL2.TASK_ID = WL1.TASK_ID	
+						LEFT OUTER JOIN mapo_work_dist WL3	ON	WL3.TASK_ID = WL1.TASK_ID AND WL3.ORG_ID = WL1.ORG_ID											
+						LEFT OUTER JOIN comtccmmndetailcode WL4	ON	WL4.CODE = WL3.APPROVAL
+						LEFT OUTER JOIN comtccmmndetailcode WL5 ON	WL5.CODE = WL2.TASK_IDX
+						<!-- LEFT OUTER JOIN comtnemplyrinfo WL5 ON	WL2.ORG_ID = WL5.PSTINST_CODE -->
+						
+				WHERE	
+						1=1
+			  			<if test="taskIdx != null and taskIdx != ''"> 
+							AND TASK_IDX = #{taskIdx, jdbcType=VARCHAR}
+						</if>
+			  			<if test="taskNm != null and taskNm != '' or taskContents != null and taskContents != ''"> 
+							AND
+								(
+								TASK_NM LIKE CONCAT('%', #{taskNm, jdbcType=VARCHAR}, '%')
+							OR	TASK_CONTENTS LIKE CONCAT('%', #{taskContents, jdbcType=VARCHAR}, '%')
+								)
+						</if>
+						<if test="manager != null and manager != ''"> 
+							AND MANAGER = #{manager, jdbcType=VARCHAR}
+						</if>						
+						<if test="approval != null and approval != ''"> 
+							AND APPROVAL = #{approval, jdbcType=VARCHAR}
+						</if>						
+						<if test="startDt != null and startDt != '' and endDt != null and endDt != ''"> 
+							AND CLOSE_DT BETWEEN #{startDt, jdbcType=VARCHAR} AND #{endDt, jdbcType=VARCHAR}
+						</if>
+						AND WL1.ORG_ID = #{myOrgId, jdbcType=VARCHAR}
+												
+				ORDER BY 
+						WL1.TASK_ID DESC)	WLO		
+	</select>
+	
+	<!-- 업무확인 total(복지시설) -->
+	<select id="selectWorkTotalOrg" parameterType="mapo.work.service.WorkVO" resultType="int">
+		SELECT 
+				COUNT(*) TOTAL 
+		FROM ( 
+  				SELECT
+	  					DISTINCT WL1.TASK_ID
+	  				, 	WL2.TASK_ID TASK_ID2
+	  				,	ORG_ID
+ 			 	FROM 
+  						mapo_work_dist WL1 
+  						LEFT OUTER JOIN mapo_work WL2 ON WL1.TASK_ID = WL2.TASK_ID 
+  				WHERE
+  						1=1 
+	  					<if test="taskIdx != null and taskIdx != ''"> 
+						AND TASK_IDX = #{taskIdx, jdbcType=VARCHAR}
+						</if>
+			  			<if test="taskNm != null and taskNm != '' or taskContents != null and taskContents != ''"> 
+						AND(TASK_NM LIKE CONCAT('%', #{taskNm, jdbcType=VARCHAR}, '%')
+							OR	TASK_CONTENTS LIKE CONCAT('%', #{taskContents, jdbcType=VARCHAR}, '%')
+						)
+						</if>
+						<if test="manager != null and manager != ''"> 
+						AND MANAGER = #{manager, jdbcType=VARCHAR}
+						</if>						
+						<if test="approval != null and approval != ''"> 
+						AND APPROVAL = #{approval, jdbcType=VARCHAR}
+						</if>						
+						<if test="startDt != null and startDt != '' and endDt != null and endDt != ''"> 
+						AND CLOSE_DT BETWEEN #{startDt, jdbcType=VARCHAR} AND #{endDt, jdbcType=VARCHAR}
+						</if>
+				) WLO
+		WHERE 
+				1=1 
+				AND ORG_ID = #{myOrgId, jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 업무 항목 조회 -->
+	<select id="selectItemList" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT 
+      				A.TASK_ID
+      			,	ITEM_ID
+      			,	ITEM_NM
+      			,	ITEM_DETAIL
+      			,	TEXT_YN
+      			,	INPUT_YN
+				, 	A.ATCH_FILE_ID
+		FROM 
+							mapo_work 		A 
+			LEFT OUTER JOIN mapo_work_item 	B ON A.TASK_ID = B.TASK_ID
+        
+   		WHERE 
+				A.TASK_ID = #{taskId, jdbcType=VARCHAR}
+	</select>
+	
+		<!-- 업무 항목 조회 복지기관 -->
+	<select id="selectItemListOrg" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT 
+      				WL1.TASK_ID
+      			,	WL1.ITEM_ID
+      			,	WL1.ORG_ID
+      			,	WL1.ITEM_VALUE
+      			
+      			,	WL2.TASK_ID TASK_ID2
+      			,	WL2.ITEM_ID ITEM_ID2
+      			,	WL2.ITEM_NM
+      			,	WL2.ITEM_DETAIL
+      			,	WL2.INPUT_YN
+      			,	WL2.TEXT_YN
+		FROM 
+				mapo_work_check WL1	
+				LEFT OUTER JOIN mapo_work_item WL2 ON WL1.TASK_ID = WL2.TASK_ID AND WL1.ITEM_ID = WL2.ITEM_ID
+        
+   		WHERE 
+				WL1.TASK_ID = #{taskId, jdbcType=VARCHAR}
+				AND WL1.ORG_ID = #{myOrgId, jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 복지기관의 업무 승인요청 -->
+	<update id="updateApproval"  parameterType="mapo.work.service.WorkVO">
+		UPDATE mapo_work_dist
+		SET  
+		    APPROVAL = 'REQ030'
+		    ,UPDATE_ID = #{updateId, jdbcType=VARCHAR}
+
+		WHERE
+		 
+		  TASK_ID = #{taskId, jdbcType=VARCHAR}
+		  AND ORG_ID = #{orgId, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 선택한 업무 기관 조회  -->
+	<select id="selectWorkOrgList" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT 
+		      	A.TASK_ID
+		    , 	A.ORG_ID
+		    , 	A.ORG_LC
+		    , 	A.ORG_LC		AS CL_CODE
+		    , 	B.CL_CODE_NM
+		    , 	A.ORG_MC
+		    , 	C.CODE_ID_NM
+		    , 	A.ORG_SC
+		    , 	A.ORG_NM
+		    , 	D.CODE_NM
+		FROM 
+	    					mapo_work_org 		A
+		 LEFT OUTER JOIN 	comtccmmnclcode  	B ON A.ORG_LC = B.CL_CODE
+		 LEFT OUTER JOIN 	comtccmmncode    	C ON A.ORG_MC = C.CODE_ID
+		 LEFT OUTER JOIN 	comtccmmndetailcode D ON A.ORG_SC = D.CODE
+		WHERE 
+	 			A.TASK_ID = #{taskId, jdbcType=VARCHAR}
+	</select>
+ 	
+	
+	<!-- 업무확인상세(복지시설) -->
+	<select id="selectWorkDetail" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT 
+		   			WD1.TASK_ID
+		      	,	WD1.TASK_NM
+		      	,	WD1.TASK_CONTENTS
+		      	,	WD1.TASK_IDX
+		      	,	WD1.MANAGER
+		      	,	WD1.STEP
+		      	, 	WD3.CODE_NM  AS STEP_NM
+		      	  
+		      	,	WD1.CLOSE_DT
+		      	,	WD1.CLOSE_TM
+		      	,	WD1.ATCH_FILE_ID
+		      	,	WD1.URGENT
+		      	
+		      	,	WD2.CODE	TAS_CD
+		      	,	WD2.CODE_NM TAS_NM
+
+		FROM 
+				mapo_work WD1
+				LEFT OUTER JOIN	comtccmmndetailcode WD2 ON WD1.TASK_IDX = WD2.CODE
+        		LEFT OUTER JOIN	comtccmmndetailcode WD3 ON WD1.STEP = WD3.CODE
+   		WHERE 
+				TASK_ID = #{taskId, jdbcType=VARCHAR}
+
+		</select>
+			
+	<!-- 승인요청 상태 불러오기 -->
+	<select id="selectApproval" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT 
+					CODE_NM
+		FROM 
+					mapo_work_dist
+				, 	comtccmmndetailcode
+		WHERE 
+				APPROVAL = CODE
+				AND TASK_ID = #{taskId, jdbcType=VARCHAR}
+				AND ORG_ID = #{myOrgId, jdbcType=VARCHAR}		
+	</select>
+		
+
+	<!-- 업무 갯수 조회 -->
+	<select id="selectWorkTotal" parameterType="mapo.work.service.WorkVO" resultType="int">
+		SELECT COUNT(*) TOTAL FROM
+		(
+			SELECT 
+					*
+			FROM 
+					mapo_work
+					
+			WHERE	
+					1=1
+		  			<if test="taskIdx != null and taskIdx != ''"> 
+					AND TASK_IDX = #{taskIdx, jdbcType=VARCHAR}
+					</if>
+		  			<if test="taskNm != null and taskNm != '' or taskContents != null and taskContents != ''"> 
+					AND(TASK_NM LIKE CONCAT('%', #{taskNm, jdbcType=VARCHAR}, '%')
+						OR	TASK_CONTENTS LIKE CONCAT('%', #{taskContents, jdbcType=VARCHAR}, '%')
+					)
+					</if>
+					<if test="manager != null and manager != ''"> 
+					AND MANAGER = #{manager, jdbcType=VARCHAR}
+					</if>						
+					<if test="step != null and step != ''"> 
+					AND STEP = #{step, jdbcType=VARCHAR}
+					</if>						
+					<if test="startDt != null and startDt != '' and endDt != null and endDt != ''"> 
+					AND CLOSE_DT BETWEEN #{startDt, jdbcType=VARCHAR} AND #{endDt, jdbcType=VARCHAR}
+					</if>
+			) T1
+		WHERE 1=1
+				<if test="searchkeyword	!= null and searchkeyword == 'workDist'">
+				AND T1.STEP IN ('STE030', 'STE040', 'STE050')
+				</if>	
+	</select>
+		
+	<!-- 복지시설 리스트 조회 -->
+	<select id="selectGthOrgList" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT 
+		 	  	ORG_ID	AS CODE
+			, 	ORG_NM	AS CODE_NM
+		  	, 	ORG_LC
+        	, 	ORG_MC
+        	, 	ORG_SC
+		FROM 
+		    	mapo_org
+		WHERE 
+		  		USE_YN = 'Y'
+		<if test = "orgSc != null and orgSc != ''">
+			AND	ORG_SC = #{orgSc, jdbcType=VARCHAR} 
+		</if>
+		ORDER BY
+		 		ORG_NM
+	</select>
+	
+	<!-- 공통코드 중분류 조회 -->
+	<select id="selectMiddleCode" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT 
+				CL_CODE		
+			  , CODE_ID		AS CODE
+			  , CODE_ID_NM	AS CODE_NM
+		FROM 
+				comtccmmncode 
+		WHERE
+		      	CL_CODE = #{clCode, jdbcType=VARCHAR}
+		  AND	CODE_ID	= #{codeId, jdbcType=VARCHAR}
+		  AND 	USE_AT  = 'Y'
+		 ORDER 	
+		 		BY CODE_ID_NM
+	</select>
+	
+	<!--  업무 항목 입력(업데이트) -->
+  	<update id="insertItemValue"  parameterType="mapo.work.service.WorkVO">
+		UPDATE mapo_work_check
+		SET 
+		    ITEM_VALUE 		= #{itemValue, 		jdbcType=VARCHAR}
+		  , UPDATE_ID 		= #{updateId, 		jdbcType=VARCHAR}
+		  , UPDATE_DT 		= SYSDATE()	
+		
+		WHERE 		  
+		  	TASK_ID = #{taskId, jdbcType=VARCHAR}
+		  	AND ITEM_ID = #{itemId, jdbcType=VARCHAR}
+		  	AND ORG_ID = #{orgId, jdbcType=VARCHAR}		
+	</update>
+	
+	<!-- 복지시설에서 업무 읽음 처리 -->
+  	<update id="updateCount"  parameterType="mapo.work.service.WorkVO">
+		UPDATE 
+				mapo_work_dist
+		SET 
+				APPROVAL = 'REQ020'
+			,	FRST_READ_ID = #{frstReadId, jdbcType=VARCHAR}
+			,	FRST_READ_DT = SYSDATE()
+			,	COUNT = COUNT+1
+		WHERE	
+				COUNT = 0
+				AND TASK_ID = #{taskId, jdbcType=VARCHAR}
+				AND ORG_ID = #{myOrgId, jdbcType=VARCHAR}				
+	 </update>
+	 
+	<!-- 배포 리스트 조회 -->
+	<select id="selectResultGubun" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		SELECT
+		      A.ORG_ID
+		    , A.TASK_ID
+		    , A.FRST_READ_ID
+		    , A.FRST_READ_DT
+		
+		    , B.TASK_IDX 
+		    ,(SELECT CODE_NM
+			    FROM comtccmmndetailcode
+			    WHERE CODE=  B.TASK_IDX ) as TAS_NM
+		    , B.TASK_NM 
+		
+		    , C.ORG_NM
+		    
+		    , D.ITEM_ID
+		    , D.ITEM_VALUE
+		    
+		    , F.CODE_NM
+		    , F.CODE
+		FROM 
+			mapo_work_dist A
+		    LEFT OUTER JOIN mapo_work B ON A.TASK_ID = B.TASK_ID
+		    LEFT OUTER JOIN mapo_org C ON C.ORG_ID = A.ORG_ID
+		    LEFT OUTER JOIN mapo_work_check D ON D.ORG_ID = A.ORG_ID
+		    LEFT OUTER JOIN mapo_work_item E ON E.TASK_ID = A.TASK_ID 
+		    LEFT OUTER JOIN comtccmmndetailcode F ON F.CODE = A.APPROVAL
+		WHERE
+		    F.CODE_ID =#{codeId, jdbcType=VARCHAR}
+				
+			<if test="startDt != null and startDt != '' and endDt != null and endDt != ''"> 
+				AND CLOSE_DT BETWEEN #{startDt, jdbcType=VARCHAR} AND #{endDt, jdbcType=VARCHAR}
+			</if>
+			<if test="taskIdx != null and taskIdx != ''">
+				AND B.TASK_IDX = #{taskIdx, jdbcType=VARCHAR}
+			</if>
+			<if test="code != null and code != ''"> 
+				AND F.CODE = #{code, jdbcType=VARCHAR}
+			</if>
+			<if test="taskNm != null and taskNm != '' "> 
+				AND B.TASK_NM  LIKE CONCAT ( '%', #{taskNm, jdbcType=VARCHAR}, '%' )
+			</if>
+		ORDER BY TASK_ID ASC
+		LIMIT #{recordCountPerPage, jdbcType=INTEGER} OFFSET #{firstIndex, jdbcType=INTEGER}		
+	</select>
+	
+	<!-- 배포 갯수 조회 -->
+	<select id="selectResultTotal" parameterType="mapo.work.service.WorkVO" resultType="int">
+	
+		SELECT
+		      COUNT(*) 
+		FROM 
+			mapo_work_dist A
+		    LEFT OUTER JOIN mapo_work B ON A.TASK_ID = B.TASK_ID
+		    LEFT OUTER JOIN mapo_org C ON C.ORG_ID = A.ORG_ID
+		    LEFT OUTER JOIN mapo_work_check D ON D.ORG_ID = A.ORG_ID
+		    LEFT OUTER JOIN mapo_work_item E ON E.TASK_ID = A.TASK_ID 
+		    LEFT OUTER JOIN comtccmmndetailcode F ON F.CODE = A.APPROVAL
+		WHERE
+		    F.CODE_ID =#{codeId, jdbcType=VARCHAR}
+				
+			<if test="startDt != null and startDt != '' and endDt != null and endDt != ''"> 
+				AND CLOSE_DT BETWEEN #{startDt, jdbcType=VARCHAR} AND #{endDt, jdbcType=VARCHAR}
+			</if>
+			<if test="taskIdx != null and taskIdx != ''"> 
+				AND B.TASK_IDX = #{taskIdx, jdbcType=VARCHAR}
+			</if>
+			<if test="code != null and code != ''">
+				AND F.CODE = #{code, jdbcType=VARCHAR}
+			</if>
+			<if test="taskNm != null and taskNm != '' "> 
+				AND B.TASK_NM  LIKE CONCAT ( '%', #{taskNm, jdbcType=VARCHAR}, '%' )
+			</if>
+			
+	</select>
+	
+	
+	<!-- 배포결과 상세 리스트 조회 -->
+	<select id="selectResultItemGubun" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		 SELECT 
+	              A.ORG_ID
+	            , A.TASK_ID	
+	              
+	            , A.APPROVAL
+	            , B1.CODE_NM
+	             
+	            , D.STEP
+	            , (SELECT CODE_NM
+	      		FROM comtccmmndetailcode
+	      		WHERE CODE =  D.STEP) as STEP_NM
+	      		 
+	            , (SELECT CODE_NM
+	      		FROM comtccmmndetailcode
+	      		WHERE CODE =  D.TASK_IDX ) as TAS_NM
+	                
+	            , D.TASK_NM
+	            
+	            , E.ORG_NM
+	            , A.FRST_READ_ID
+			    , A.FRST_READ_DT
+			    , F.USER_NM
+			    		
+			    , C.UPDATE_DT
+			    , C.UPDATE_ID   
+			    , (SELECT USER_NM
+	      		FROM comtnemplyrinfo
+	      		WHERE EMPLYR_ID = C.UPDATE_ID  ) as UPDATE_NM
+
+     FROM
+     			mapo_work_check C
+				LEFT OUTER JOIN mapo_work D	ON	D.TASK_ID = C.TASK_ID	
+			    LEFT OUTER JOIN mapo_work_org E	ON	C.ORG_ID = E.ORG_ID
+				LEFT OUTER JOIN mapo_work_dist A	ON	A.TASK_ID = C.TASK_ID AND A.ORG_ID = C.ORG_ID											
+				LEFT OUTER JOIN comtccmmndetailcode B1 ON	B1.CODE = A.APPROVAL
+				LEFT OUTER JOIN comtccmmndetailcode B2 ON	B2.CODE = D.TASK_IDX
+				LEFT OUTER JOIN comtnemplyrinfo F ON A.FRST_READ_ID = F.EMPLYR_ID
+			
+	WHERE 
+	    		A.task_id   = #{taskId, jdbcType=VARCHAR}
+	    		
+	GROUP BY 
+	    		A.ORG_ID
+	    
+	</select>
+	
+	<!-- 엑셀 다운로드 시 데이터 (배포결과 상세 리스트) -->
+	<select id="selectResultItemGubun2" parameterType="map" resultType="egovMap">
+		 SELECT 
+              CONCAT(A.ORG_ID) AS ORG_ID
+            , CONCAT(A.TASK_ID) AS TASK_ID -- 업무 ID
+              
+            , A.APPROVAL
+            , B1.CODE_NM   -- 진행상태 
+             
+            , (SELECT CODE_NM
+      		FROM comtccmmndetailcode
+      		WHERE CODE =  D.TASK_IDX ) as TAS_NM -- 업무구분
+                
+            , D.TASK_NM -- 업무제목
+            
+            , E.ORG_NM  -- 기관명
+            , A.FRST_READ_ID -- 최초확인자
+		    , A.FRST_READ_DT -- 최초확인일
+		    , F.USER_NM -- 최초확인자 성명
+		    
+		     , C.UPDATE_DT
+			 , C.UPDATE_ID   
+			 , (SELECT USER_NM
+	      		FROM comtnemplyrinfo
+	      		WHERE EMPLYR_ID = C.UPDATE_ID  ) as UPDATE_NM
+	      		
+     FROM  mapo_work_check C
+			LEFT OUTER JOIN mapo_work D	ON	D.TASK_ID = C.TASK_ID	
+            LEFT OUTER JOIN mapo_work_org E	ON	C.ORG_ID = E.ORG_ID
+			LEFT OUTER JOIN mapo_work_dist A	ON	A.TASK_ID = C.TASK_ID AND A.ORG_ID = C.ORG_ID											
+			LEFT OUTER JOIN comtccmmndetailcode B1 ON	B1.CODE = A.APPROVAL
+			LEFT OUTER JOIN comtccmmndetailcode B2 ON	B2.CODE = D.TASK_IDX
+			LEFT OUTER JOIN comtnemplyrinfo F ON A.FRST_READ_ID = F.EMPLYR_ID
+	    WHERE A.task_id   = #{taskId, jdbcType=VARCHAR}
+	    GROUP BY A.ORG_ID;
+	</select>
+	
+	
+	<!-- 배포결과 상세 갯수 조회(항목 포함) -->
+	<select id="selectResultItemTotal" parameterType="mapo.work.service.WorkVO2" resultType="int">
+	 	SELECT COUNT(*) TOTAL 
+		FROM ( SELECT 
+		       A.TASK_ID     
+			    FROM 
+				    mapo_work_check A 
+				    LEFT OUTER JOIN mapo_work_org B ON A.ORG_ID = B.ORG_ID
+				    LEFT OUTER JOIN mapo_work_dist C ON C.ORG_ID = A.ORG_ID
+				    LEFT OUTER JOIN mapo_work D ON D.TASK_ID = A.TASK_ID
+				    LEFT OUTER JOIN mapo_work_item E on E.ITEM_ID = A.ITEM_ID
+				    LEFT OUTER JOIN comtccmmndetailcode F ON F.CODE = C.APPROVAL
+			    WHERE A.task_id   = #{taskId, jdbcType=VARCHAR}
+		      GROUP BY A.ORG_ID ) T;
+	</select>
+	
+	<!-- 배포결과 (항목 제목 조회) -->
+	<select id="selectResultItem" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+		   SELECT ITEM_NM, ITEM_ID 
+		   FROM mapo_work_item 
+		   WHERE task_id = #{taskId, jdbcType=VARCHAR};
+	</select>
+	
+	<select id="selectResultItemSize" parameterType="mapo.work.service.WorkVO" resultType ="int">
+		   SELECT count(*)
+		   FROM mapo_work_item 
+		   WHERE task_id = #{taskId, jdbcType=VARCHAR};
+	</select>
+	
+	<!-- 배포결과 (항목 값 조회)-->
+	<select id="selectResultItemValue" parameterType="mapo.work.service.WorkVO" resultMap="workList">
+	 	<![CDATA[
+			SET @sql = NULL;
+			SELECT
+			  GROUP_CONCAT(DISTINCT
+			    CONCAT(
+			       "max(case when col = '", col,  "' then value end) as ",  col, '')
+			  ) INTO @sql
+			FROM
+			(
+			  	select concat('item', item_id) col
+			  	from  mapo_work_check 
+			  	where  TASK_ID = #{taskId}
+			  ]]>
+			   
+			<![CDATA[
+			)d;
+			]]>
+			
+			<![CDATA[
+			SET @sql = CONCAT("SELECT org_id, ", @sql, 
+							 " FROM( select org_id, CONCAT('item', item_id) col, item_value value 
+									from mapo_work_check 
+									where ]]> TASK_ID = ${taskId} <![CDATA[) d 
+									group by org_id");
+									
+			PREPARE stmt FROM @sql;
+			EXECUTE stmt;
+			DEALLOCATE PREPARE stmt;
+			]]>
+	</select>
+	
+	<!-- 배포결과 상세 승인 완료 -->
+	<update id="workResultApproved"  parameterType="mapo.work.service.WorkVO">
+		UPDATE mapo_work_dist
+		SET  
+		    APPROVAL = 'REQ050'
+		WHERE
+		  TASK_ID = #{taskId, jdbcType=VARCHAR}
+		  AND ORG_ID = #{orgId, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 배포결과 상세 수정 요청 -->
+	<update id="workResultUpdateRequest"  parameterType="mapo.work.service.WorkVO">
+		UPDATE mapo_work_dist
+		SET  
+		    APPROVAL = 'REQ040'
+		WHERE
+		  TASK_ID = #{taskId, jdbcType=VARCHAR}
+		  AND ORG_ID = #{orgId, jdbcType=VARCHAR}
+	</update>
+	
+	
+	<!-- 배포결과 업무 완료 요청 -->
+	<update id="workComplete"  parameterType="mapo.work.service.WorkVO">
+		UPDATE mapo_work
+		SET  
+		    step = 'STE040'
+		WHERE
+		  TASK_ID = #{taskId, jdbcType=VARCHAR}
+	</update> 
+	
+	
+	
+</mapper>

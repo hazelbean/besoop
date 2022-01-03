@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SampleDAO">
+
+	<resultMap id="sampleList" type="mapo.com.sample.service.SampleVO">
+		<result property="nttId" column="NTT_ID"/>
+		<result property="bbsId" column="BBS_ID"/>	
+		<result property="nttCn" column="NTT_CN"/>	
+		<result property="nttSj" column="NTT_SJ"/>
+		<result property="frstRegisterId" column="FRST_REGISTER_ID"/>
+		<result property="frstRegisterPnttm" column="FRST_REGIST_PNTTM"/>
+	</resultMap>
+	
+	
+	<!-- 게시판 조회 -->
+	<select id="selectSampleList" parameterType="mapo.com.sample.service.SampleVO" resultMap="sampleList">
+		SELECT
+				NTT_ID
+			,	BBS_ID
+			,	NTT_CN
+			,	NTT_SJ
+			,	FRST_REGISTER_ID
+			,	FRST_REGIST_PNTTM
+		FROM
+			COMTNBBS
+		WHERE
+			BBS_ID	= #{bbsId}
+	</select>
+	
+	
+	<!-- 게시판 등록 -->
+	<insert id="Articleinsert" parameterType="mapo.com.sample.service.SampleVO">
+		INSERT INTO	COMTNBBS
+		(
+				NTT_ID
+			,	BBS_ID
+			,	NTT_SJ
+			,	NTT_CN
+			,	FRST_REGISTER_ID
+			,	FRST_REGISTER_PNTTM
+		) 
+		VALUES 
+		(
+				#{nttId}
+			,	#{bbsId}
+			,	#{nttSj}
+			,	#{nttCn}
+			,	#{frstRegisterId}
+			,	SYSDATE()
+		)
+	</insert> 
+	
+</mapper>

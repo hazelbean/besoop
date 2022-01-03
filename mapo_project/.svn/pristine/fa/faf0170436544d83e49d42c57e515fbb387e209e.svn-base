@@ -1,0 +1,108 @@
+@font-face {
+    font-family: 'MapoGoldenPier';
+    src: url('MapoGoldenPier.eot');
+    src: url('MapoGoldenPier.eot?#iefix') format('embedded-opentype'),
+        url('MapoGoldenPier.woff2') format('woff2'),
+        url('MapoGoldenPier.woff') format('woff'),
+        url('MapoGoldenPier.svg#MapoGoldenPier') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MapoBackpacking';
+    src: url('MapoBackpacking.eot');
+    src: url('MapoBackpacking.eot?#iefix') format('embedded-opentype'),
+        url('MapoBackpacking.woff2') format('woff2'),
+        url('MapoBackpacking.woff') format('woff'),
+        url('MapoBackpacking.svg#MapoBackpacking') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MapoDacapo';
+    src: url('MapoDacapo.eot');
+    src: url('MapoDacapo.eot?#iefix') format('embedded-opentype'),
+        url('MapoDacapo.woff2') format('woff2'),
+        url('MapoDacapo.woff') format('woff'),
+        url('MapoDacapo.svg#MapoDacapo') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MapoAgape';
+    src: url('MapoAgape.eot');
+    src: url('MapoAgape.eot?#iefix') format('embedded-opentype'),
+        url('MapoAgape.woff2') format('woff2'),
+        url('MapoAgape.woff') format('woff'),
+        url('MapoAgape.svg#MapoAgape') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MapoDPP';
+    src: url('MapoDPP.eot');
+    src: url('MapoDPP.eot?#iefix') format('embedded-opentype'),
+        url('MapoDPP.woff2') format('woff2'),
+        url('MapoDPP.woff') format('woff'),
+        url('MapoDPP.svg#MapoDPP') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MapoHongdaeFreedom';
+    src: url('MapoHongdaeFreedom.eot');
+    src: url('MapoHongdaeFreedom.eot?#iefix') format('embedded-opentype'),
+        url('MapoHongdaeFreedom.woff2') format('woff2'),
+        url('MapoHongdaeFreedom.woff') format('woff'),
+        url('MapoHongdaeFreedom.svg#MapoHongdaeFreedom') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MapoFlowerIsland';
+    src: url('MapoFlowerIsland.eot');
+    src: url('MapoFlowerIsland.eot?#iefix') format('embedded-opentype'),
+        url('MapoFlowerIsland.woff2') format('woff2'),
+        url('MapoFlowerIsland.woff') format('woff'),
+        url('MapoFlowerIsland.svg#MapoFlowerIsland') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MapoPeacefull';
+    src: url('MapoPeacefull.eot');
+    src: url('MapoPeacefull.eot?#iefix') format('embedded-opentype'),
+        url('MapoPeacefull.woff2') format('woff2'),
+        url('MapoPeacefull.woff') format('woff'),
+        url('MapoPeacefull.svg#MapoPeacefull') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'MapoMaponaru';
+    src: url('MapoMaponaru.eot');
+    src: url('MapoMaponaru.eot?#iefix') format('embedded-opentype'),
+        url('MapoMaponaru.woff2') format('woff2'),
+        url('MapoMaponaru.woff') format('woff'),
+        url('MapoMaponaru.svg#MapoMaponaru') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+

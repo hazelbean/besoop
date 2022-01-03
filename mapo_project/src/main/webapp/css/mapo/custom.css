@@ -1,0 +1,167 @@
+@charset "UTF-8";
+@import url("../../font_mapo/stylesheet.css");		
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.min.css");	
+
+
+/* 메인화면 좌측 로고 타이틀 */
+p.mainText {
+	/* color:	#148EFF; */
+	color: #FFFFFF;
+	font-size: 1.3em;
+	font-family: Roboto; 
+	/*  font-family: MapoAgape'; */
+	margin-top: 12px;
+}
+
+/* 화면별 메뉴 타이틀 */
+p.pageTitle {
+	color:	#111A62;
+	font-size: 1.4em;
+	font-family: MapoDPP;
+	/* font-weight: bold; */
+}
+
+p.pageTitle i {
+	color : #51545E;
+	margin-right: 4px;
+	margin-left: 6px;
+	margin-top: 4px;
+	vertical-align: center;
+	
+}
+
+/* font 컬러 검정색 */
+.customText {
+	color:#111A62;
+}
+
+/* 테이블 위쪽 라인 */
+.line-bottom {
+	border-bottom:1px solid #E3E6F0 !important;
+}
+
+
+/* 전체 화면 배경색  */
+.page-top{
+	background-color:#E5E5E5;
+}
+
+/* 카드 배경색 */
+.body{
+	background-color: #F2F3F4;
+}
+
+
+#title2{
+	text-color:	#020202E5;
+}
+
+
+#delete_select{
+	height: 20px;
+	width: 80px;
+	padding-bottom: 20px;
+}
+/* 항목 입력 */
+#check_form{
+	margin-top: 40px;
+}
+
+/*선택 리스트 */
+#check_item_form{
+	margin-top: 20px;
+}
+
+/* Mapo 금빛나루 */
+.goldenPier {
+    font-family: 'MapoGoldenPier';           
+}
+/* Mapo 꽃섬 */
+ .flowerIsland {
+    font-family: 'MapoFlowerIsland';
+}
+/* Mapo 다카포 */
+ .dacapo {
+    font-family: 'MapoDacapo'; 
+}
+/* Mapo 당인리발전소 */
+ .dpp {
+    font-family: 'MapoDPP';
+}
+/* Mapo 마포나루 */
+ .maponaru {
+    font-family: 'MapoMaponaru';
+}
+/* Mapo 배낭여행 */
+ .backpacking {
+    font-family: 'MapoBackpacking';
+}
+/* Mapo 애민 */
+ .agape {
+    font-family: 'MapoAgape';
+}
+/* Mapo 한아름 */
+  .peacefull {
+    font-family: 'MapoPeacefull';
+}
+/* Mapo 홍대프리덤 */
+ .freedom {
+    font-family: 'MapoHongdaeFreedom';
+} 
+
+.error-text {
+	display:block;
+	font-size:1.0em;
+	font-color:#4e73df; 
+	font-family:Roboto;
+	margin-top:4px;
+}
+
+
+.modal-dialog.modal-80size {
+  width: 80%;
+  height: 80%;
+  margin: 0;
+  padding: 0;
+}
+
+.modal-dialog.modal-center {
+  display: inline-block;
+  text-align: left;
+  vertical-align: middle; 
+}
+
+.modal-content.modal-80size {
+  height: auto;
+  min-height: 80%;
+}
+
+.modal.modal-center {
+  text-align: center;
+}
+
+@media screen and (min-width: 1200px) {
+  .modal.modal-center:before {
+    display: inline-block;
+    vertical-align: middle;
+    content: " ";
+    height: 100%;
+  }
+}
+
+/* 체크박스 disabled 색상변경 */
+input[type="checkbox"]:disabled {
+ 	background: #4e73df;
+}
+
+토글 커스텀 */
+/* .toggle.ios, .toggle-on.ios, .toggle-off.ios { border-radius: 20rem; }
+.toggle.ios, .toggle-handle { border-radius: 20rem; } */
+
+/* 메인화면 케러셀 설정 */
+/* .carousel-inner .carousel-item {
+width: 100%;	
+height: 100%;	
+background-size: cover;
+background-position: center;
+} */
